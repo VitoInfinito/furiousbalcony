@@ -1,0 +1,9 @@
+<ion-view title="Current game sessions">
+  <ion-content>
+    <ion-list>
+      <ion-item ng-repeat="game in games" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+        {{game.name}}
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
