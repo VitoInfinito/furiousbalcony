@@ -16,9 +16,30 @@ angular.module('starter.controllers', [])
 })
 
 .controller('GamesCtrl', function($scope, Games) {
-  $scope.games = Games.all();
+	var update = function(data) {
+		$scope.games = data;
+	};
+
+	$scope.reload = function() {
+		Games.fetchGames(update);
+	};
+
+	$scope.reload();
+  
 })
 
 .controller('GameDetailCtrl', function($scope, $stateParams, Games) {
-  $scope.game = Games.get($stateParams.gameId);
+	var findGame = function(gameId) {
+		var games = Games.getGames();
+      	if(typeof gameId !== 'undefined') {
+        	for(game in games) {
+          		if(gameId === games[game].id) {
+         		   	return games[game];
+          		}
+        	}
+      	}
+      	return null;
+    };
+    $scope.game = findGame(parseInt($stateParams.gameId));
+    
 });

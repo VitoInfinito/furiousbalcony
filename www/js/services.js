@@ -25,24 +25,39 @@ angular.module('starter.services', [])
   }
 })
 
-.factory('Games', function() {
-  // Might use a resource here that returns a JSON array
-
-  // Some fake testing data
-  var games = [
-    { id: 0, name: 'Session 1' },
-    { id: 1, name: 'Session 2' },
-    { id: 2, name: 'Session 3' },
-    { id: 3, name: 'Session test' }
-  ];
+.factory('Games', ['$http', 
+  function($http) {
+    //Save the games for future detailed references
+    var games = [];
 
   return {
-    all: function() {
+    fetchGames: function(callback) {
+      $http.get('http://lethe.se:10600/list')
+        .success(function(data){
+          games = data;
+        }).finally(function() {
+          callback(games);
+        });
+    },
+    getGames: function() {
       return games;
     },
     get: function(gameId) {
-      // Simple index lookup
       return games[gameId];
+    }
+  }
+}])
+
+.factory('Game', function() {
+
+
+  return {
+    get: function() {
+      // Simple index lookup
+      return null;
+    },
+    getUsers: function() {
+      
     }
   }
 })
@@ -50,7 +65,7 @@ angular.module('starter.services', [])
 .factory('User', function() {
   var user = { id: 0, name: 'Testname' };
 
-  
+
 
   return {
     get: function() {

@@ -1,8 +1,9 @@
 <ion-view title="Current game sessions">
   <ion-content>
+  	<div ng-click="reload()">Reload</div>
     <ion-list>
       <ion-item ng-repeat="game in games" type="item-text-wrap" href="#/tab/game/{{game.id}}">
-        {{game.name}}
+        {{game.name}} {{game.id}}
       </ion-item>
     </ion-list>
   </ion-content>
