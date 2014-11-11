@@ -1,5 +1,32 @@
-/* Empty. Add your own CSS if you like */
-
 .fb-navbar {
 	background-color: #F5CC45 !important;
+}
+
+.fb-button {
+	
+	cursor:pointer;
+	display:inline-block;
+	margin:0.4em;
+}
+
+.fb-button:hover {
+	color:#888888;
+}
+
+#gameListHead {
+	font-size:1em;
+	margin-left:1em;
+	margin-right:4em;
+	height:2em;
+}
+
+.gameListItem {
+	width:50%;
+	float:left;
+}
+
+.text-float-right {
+	position:absolute;
+	right:0;
+	margin-right:2em;
 }

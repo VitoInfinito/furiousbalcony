@@ -39,6 +39,15 @@ angular.module('starter.services', [])
           callback(games);
         });
     },
+    fetchGame: function(gameId, callback) {
+      var game;
+      $http.get('http://lethe.se:10600/getGame?id=' + gameId)
+        .success(function(data){
+          game = data;
+        }).finally(function() {
+          callback(game);
+        });
+    },
     getGames: function() {
       return games;
     },

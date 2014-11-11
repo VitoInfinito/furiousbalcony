@@ -40,6 +40,13 @@ angular.module('starter.controllers', [])
       	}
       	return null;
     };
-    $scope.game = findGame(parseInt($stateParams.gameId));
+
+    var update = function(data) { $scope.game = data; };
+    $scope.getGame = function() {
+      Games.fetchGame($stateParams.gameId, update);
+    };
+    /*$scope.game = findGame(parseInt($stateParams.gameId));*/
+
+    $scope.getGame();
     
 });
