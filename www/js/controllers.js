@@ -4,7 +4,7 @@ angular.module('starter.controllers', [])
 	$scope.user = User.get();
 })
 
-.controller('AccountCtrl', function($scope) {
+.controller('SettingsCtrl', function($scope) {
 })
 
 .controller('GamesCtrl', function($scope, Games) {
