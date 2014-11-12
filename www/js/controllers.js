@@ -17,6 +17,9 @@ angular.module('starter.controllers', [])
 	};
 
 	$scope.reload();
+
+  var socket;
+  socket = io.connect('http://lethe.se:10600/lobby');
   
 })
 
@@ -40,5 +43,14 @@ angular.module('starter.controllers', [])
     /*$scope.game = findGame(parseInt($stateParams.gameId));*/
 
     $scope.getGame();
+
+    var socket;
+
+    socket = io.connect('http://lethe.se:10600');
+
+    socket.on('connect', function() {
+      console.log('Client has connected to the server!');
+      socket.emit('connectToGame', { gameId: 0, playerId: 1, playerName: "thisname" });
+    });
     
 });
