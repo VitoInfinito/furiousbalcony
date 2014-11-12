@@ -14,9 +14,9 @@
 }
 
 #gameListHead {
-	font-size:1em;
+	font-size:1.2em;
+	margin-top:1.2em;
 	margin-left:1em;
-	margin-right:4em;
 	height:2em;
 }
 

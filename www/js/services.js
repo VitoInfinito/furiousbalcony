@@ -27,6 +27,13 @@ angular.module('starter.services', [])
 
 .factory('Games', ['$http', 
   function($http) {
+
+    var socket = io.connect('http://lethe.se:10600');
+
+    socket.on('connect', function() {
+      console.log('Client has connected to the server!');
+    });
+
     //Save the games for future detailed references
     var games = [];
 
