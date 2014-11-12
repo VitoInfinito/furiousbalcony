@@ -41,7 +41,7 @@ angular.module('starter.services', [])
     },
     fetchGame: function(gameId, callback) {
       var game;
-      $http.get('http://lethe.se:10600/getGame?id=' + gameId)
+      $http.get('http://lethe.se:10600/getgamebyid?id=' + gameId)
         .success(function(data){
           game = data;
         }).finally(function() {
