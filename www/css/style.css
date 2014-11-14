@@ -2,15 +2,42 @@
 	background-color: #F5CC45 !important;
 }
 
+.statusfield {
+	text-align: center;
+	margin-top: 1em;
+	color:green;
+}
+
+.error {
+	color:red;
+}
+
 .fb-button {
-	
 	cursor:pointer;
-	display:inline-block;
-	margin:0.4em;
+	display: inline-block;
+	background-color: white;
+	border-radius:5px;
+	box-shadow: 0 0 0 rgba(0, 0, 0, 0.075);
+	border: 1px solid #aaa;
+	margin: 5px 0px;
+	padding: 0.3em 1em;
 }
 
 .fb-button:hover {
-	color:#888888;
+	background-color:#ccc;
+}
+
+.fb-name-button {
+	padding-top:0.2em;
+	height: 2em;
+	display: inline-block;
+	text-align: center;
+	vertical-align: middle;
+	width:100%;
+}
+
+#welcome {
+	text-align: center;
 }
 
 #gameListHead {
@@ -29,4 +56,24 @@
 	position:absolute;
 	right:0;
 	margin-right:2em;
+}
+
+.fb-text-input {
+	font-size: 1em !important;
+	padding: 0em 1em !important;
+	border: 1px solid #ddd !important;
+	border-radius: 5px !important;
+	height: 2em !important;
+	color:#666 !important;
+
+
+
+
+	transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+}
+
+.fb-text-input:focus {
+	border-color: rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 10px rgba(0, 0, 0, 0.6);
+    outline: 0 none;
 }
