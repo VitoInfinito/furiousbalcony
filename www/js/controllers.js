@@ -4,15 +4,7 @@ var hasUsername = false;
 angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($rootScope, $scope, SettingsService) {
-  $scope.showMap = true;
-  $scope.showList = false;
-  $rootScope.z = true;
-  $scope.test = function() {
-    $rootScope.showList = true;
-  }
-  $scope.shouldShow = function() {
-    return true;
-  }
+
   $scope.dash = {
     exampleFunction: function() {
       alert($scope.dash.checkname);
@@ -43,6 +35,7 @@ angular.module('starter.controllers', [])
   if(hasUsername) {
     $scope.dash.hasUsername = true;
     $scope.dash.checkname = SettingsService.getName();
+    $rootScope.hasUsername = true;
   }
 
   SettingsService.checkConnection()
@@ -69,6 +62,13 @@ angular.module('starter.controllers', [])
         $scope.games = games;
       });
 	};
+
+  $scope.createGame = function() {
+    Games.createGame()
+      .then(function(success) {
+        console.info('Game successfully created');
+      });
+  }
 
   function initSocket() {
     socket = io.connect(http + '/lobby');

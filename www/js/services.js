@@ -5,22 +5,40 @@ angular.module('starter.services', [])
 
 .factory('Games', ['$http', 
   function($http) {
+    var alphabet = "0123456789abcdefghijklmnopqrstuvwxyz";
+    var rl = function() {
+      return alphabet[Math.floor(Math.random() * (alphabet.length))];
+    }
+
+    var rlString = function(length) {
+      var rls = "";
+      for(var i=0; i<length; i++) {
+        rls = rls + rl();
+      }
+      return rls;
+    }
+    
+    user.id = rlString(40);
+    console.log(user.id);
 
     //Save the games for future detailed references
     var games = [];
 
     return {
       fetchGames: function() {
-          return $http.get('http://lethe.se:10600/list');
+          return $http.get(http + '/list');
       },
       fetchGame: function(gameId) {
-        return $http.get('http://lethe.se:10600/getgamebyid?id=' + gameId);
+        return $http.get(http + '/getgamebyid?id=' + gameId);
       },
       getGames: function() {
         return games;
       },
       get: function(gameId) {
         return games[gameId];
+      },
+      createGame: function() {
+        return $http.post(http + '/addGame', { name: user.name + "'s game" });
       }
     }
 }])
@@ -40,6 +58,7 @@ angular.module('starter.services', [])
 
 .factory('SettingsService', ['$http', 
   function($http) {
+
     return {
       setName: function(name) {
         user.name = name;
