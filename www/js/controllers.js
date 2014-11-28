@@ -93,18 +93,25 @@ angular.module('starter.controllers', [])
 })
 
 .controller('GameDetailCtrl', function($scope, $stateParams, Game) {
+    var socket;
+
     var update = function(data) { $scope.game = data; };
     $scope.getGame = function() {
+      console.log(typeof $stateParams.gameId);
       Game.fetchGame($stateParams.gameId, update)
         .then(function(success) {
           $scope.game = success.data;
         });
     };
 
+    var renderGame = function(game) {
+      $scope.game = game;
+      
+    };
+
     $scope.getGame();
 
-    /*var socket;
-
+    /*
     socket = io.connect('http://lethe.se:10600');
 
     socket.on('connect', function() {
@@ -113,7 +120,7 @@ angular.module('starter.controllers', [])
     });*/
 
     function initSocket() {
-      socket = io.connect(http + '/', {query: 'playerId=' + $routeParams.playerId});
+      socket = io.connect(http + '/', {query: 'playerId=' + Game.getUserId()});
       
       /*if(socket.socket.connected){
         socket.emit('connectToGame', { gameId: $routeParams.gameId, playerId: $routeParams.playerId, playerName: GameService.playerName });
@@ -141,9 +148,10 @@ angular.module('starter.controllers', [])
     };
     
     function joinGame() {
-      Game.joinGame($stateParams.gameId, "7", "testname")
+      Game.joinGame($stateParams.gameId, Game.getUserId(), Game.getUserName())
         .then(function(success) {
           console.info("joinGame success");
+          console.info(success.data.players[0]);
         renderGame(success.data);
         initSocket();
       },

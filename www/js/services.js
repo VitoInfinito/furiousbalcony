@@ -52,6 +52,12 @@ angular.module('starter.services', [])
       },
       joinGame: function(gameId, playerId, playerName) {
         return $http.post(http + "/joingame", { gameId: gameId, playerId: playerId, playerName: playerName });
+      },
+      getUserId: function() {
+        return user.id;
+      },
+      getUserName: function() {
+        return user.name;
       }
     }
 }])
