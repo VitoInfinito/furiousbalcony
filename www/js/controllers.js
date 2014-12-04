@@ -1,9 +1,41 @@
 var http = 'http://lethe.se:10600';
 var hasUsername = false;
+var socket;
 
 angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($rootScope, $scope, SettingsService) {
+
+  var setStatusText = function(msg) {
+    //TODO Toast (popup message that fades away)
+    document.getElementById("dash-stat").style.color = "red";
+        $scope.dash.errormsg = msg;
+        setTimeout(function() {
+          document.getElementById("dash-stat").style.color = "black";
+
+        }, 200);
+  };
+
+  var checkAndSetName = function(name) {
+    SettingsService.checkAndSetName(name)
+          .then(function(success) {
+              if(success.data === "taken") {
+                setStatusText("Name " + name + " was taken.");
+              }else {
+                SettingsService.setLocalName(name);
+                $scope.dash.hasUsername = true;
+                hasUsername = true;
+                //Makes other tabs visible
+                $rootScope.hasUsername = true;
+              }
+            });
+  };
+
+  var connectionCallback = function(connected) {
+    if(connected) {
+      $scope.dash.connected = true;
+    }
+  };
 
   $scope.dash = {
     exampleFunction: function() {
@@ -11,20 +43,12 @@ angular.module('starter.controllers', [])
     },
     checkUsername: function() {
       if(!$scope.dash.checkname) {
-        $scope.dash.errormsg = "Please enter a name";
+        setStatusText("Please enter a name");
+      }else if(!$scope.dash.connected) {
+        setStatusText("There is currently no connection to the server. Please try again later");
+        SettingsService.checkConnection(connectionCallback);
       }else {
-        SettingsService.checkName($scope.dash.checkname)
-          .then(function(success) {
-              if(success.data === "taken") {
-                $scope.dash.errormsg = "Name " + $scope.dash.checkname + " was taken.";
-              }else {
-                SettingsService.setName($scope.dash.checkname);
-                $scope.dash.hasUsername = true;
-                hasUsername = true;
-                //Makes other tabs visible
-                $rootScope.hasUsername = true;
-              }
-            });
+        checkAndSetName($scope.dash.checkname);
       }
     },
     connected: false,
@@ -38,11 +62,11 @@ angular.module('starter.controllers', [])
     $rootScope.hasUsername = true;
   }
 
-  SettingsService.checkConnection()
+  /*SettingsService.checkConnection()
     .then(function(success) {
         $scope.dash.connected = true;
-
-      });
+      });*/
+  SettingsService.checkConnection(connectionCallback);
 
 
 })
@@ -52,7 +76,7 @@ angular.module('starter.controllers', [])
 
 .controller('GamesCtrl', function($scope, Games) {
 
-  var socket;
+  //var socket;
 
 	$scope.reload = function() {
 		Games.fetchGames()
@@ -75,6 +99,7 @@ angular.module('starter.controllers', [])
 
     socket.on('connect', function() {
       console.info('lobby socket connect');
+      socket.emit('test');
     });
     
     socket.on('gameAdded', function(gameList) {
@@ -86,18 +111,23 @@ angular.module('starter.controllers', [])
   }
 
 	$scope.reload();
-  initSocket();
-
-
+  //initSocket();
+  socket = io(http + '/');
+  socket.on('gameAdded', function(gameList) {
+      console.info('gameAdded');
+      $scope.$apply(function() {
+        $scope.games = gameList;
+      });
+    });
+  socket.emit('testz', { my: 'data' });
   
 })
 
 .controller('GameDetailCtrl', function($scope, $stateParams, Game) {
-    var socket;
+    //var socket;
 
     var update = function(data) { $scope.game = data; };
     $scope.getGame = function() {
-      console.log(typeof $stateParams.gameId);
       Game.fetchGame($stateParams.gameId, update)
         .then(function(success) {
           $scope.game = success.data;
@@ -106,7 +136,7 @@ angular.module('starter.controllers', [])
 
     var renderGame = function(game) {
       $scope.game = game;
-      
+
     };
 
     $scope.getGame();
@@ -119,17 +149,27 @@ angular.module('starter.controllers', [])
       socket.emit('connectToGame', { gameId: 0, playerId: 1, playerName: "thisname" });
     });*/
 
+
+
     function initSocket() {
-      socket = io.connect(http + '/', {query: 'playerId=' + Game.getUserId()});
-      
-      /*if(socket.socket.connected){
-        socket.emit('connectToGame', { gameId: $routeParams.gameId, playerId: $routeParams.playerId, playerName: GameService.playerName });
-      }*/
-      
-      socket.on('connect', function() {
-        console.info('game socket connect');
+      //socket = io.connect(http + '/', {query: 'playerId=' + Game.getUserId()});
+      //socket = io.connect(http + '/');
+      //socket = io.connect(http + '/connectToGame', {query: 'gameId=' + $stateParams.gameId +  '&playerId=' + Game.getUserId + '&playerName=' + Game.playerName});
+      //console.info(socket);
+      //console.info(socket.connected);
+
+      //socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
+
+      //if(socket.connected){
+      //  console.info('socket.connected');
+
         //socket.emit('connectToGame', { gameId: $routeParams.gameId, playerId: $routeParams.playerId, playerName: GameService.playerName });
-      });
+      //}
+      
+      //socket.on('connect', function() {
+      //  console.info('game socket connect');
+        //socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
+      //});
       
       socket.on('updateGame', function(game) {
         console.info('updateGame');
@@ -137,13 +177,16 @@ angular.module('starter.controllers', [])
         $scope.$apply(function() {
           renderGame(game);
         });
-        
       });
       
       socket.on('gameError', function(errorMsg) {
         $scope.$apply(function() {
           $scope.gameError = errorMsg;
         });
+      });
+
+      socket.on('testx', function(data) {
+        console.info(data);
       });
     };
     
@@ -154,6 +197,8 @@ angular.module('starter.controllers', [])
           console.info(success.data.players[0]);
         renderGame(success.data);
         initSocket();
+        socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
+        
       },
       function(error) {
         console.info("joinGame error")
@@ -162,5 +207,6 @@ angular.module('starter.controllers', [])
   };
 
   joinGame();
+  
     
 });

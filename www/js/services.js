@@ -1,11 +1,12 @@
 var http = "http://lethe.se:10600";
 var user = Object();
+var socket;
 
 angular.module('starter.services', [])
 
 .factory('Games', ['$http', 
   function($http) {
-    var alphabet = "0123456789abcdefghijklmnopqrstuvwxyz";
+    var alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     var rl = function() {
       return alphabet[Math.floor(Math.random() * (alphabet.length))];
     }
@@ -48,7 +49,7 @@ angular.module('starter.services', [])
 
     return {
       fetchGame: function(gameId) {
-        return $http.get('http://lethe.se:10600/getgamebyid?id=' + gameId);
+        return $http.get(http + '/getgamebyid?id=' + gameId);
       },
       joinGame: function(gameId, playerId, playerName) {
         return $http.post(http + "/joingame", { gameId: gameId, playerId: playerId, playerName: playerName });
@@ -66,16 +67,20 @@ angular.module('starter.services', [])
   function($http) {
 
     return {
-      setName: function(name) {
+      setLocalName: function(name) {
         user.name = name;
       },
       getName: function() {
         return user.name;
       },
-      checkConnection: function() {
-        return $http.get(http + '/checkConnection');
+      checkConnection: function(callback) {
+        $http.get(http + '/checkConnection').success(function(data) {
+          callback(true);
+        }).error(function(data) {
+          callback(false);
+        })
       },
-      checkName: function(name) {
+      checkAndSetName: function(name) {
         return $http.get(http + '/checkName?name=' + name)
       }
 
