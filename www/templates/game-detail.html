@@ -1,13 +1,37 @@
 <ion-view title="{{game.name}}">
 	<ion-content has-header="true" padding="true">
-  		<ion-list>
-	    	<ion-item ng-repeat="player in game.players" type="item-text-wrap">
-		        <div>
-			        <div class="gameListItem">{{player.name}}</div>
-			        <div class="gameListItem">{{player.isReady}}</div>
-			        <div class="gameListItem">{{player.isCzar}}</div>
-		    	</div>
-	    	</ion-item>
-		</ion-list>
+
+		<table id="playerViewTable">
+			<tr class="indicatorTr">
+		    	<td class="selectingCard" ng-repeat="player in game.players" ng-class="{isCzar: player.isCzar, selectedCard: player.selectedWhiteCardId !== null}">
+				</td>
+			</tr>
+			<tr class="playerViewTr">
+		    	<td ng-repeat="player in game.players">
+				    {{player.name}}
+				</td>
+			</tr>
+		</table>
+
+		<div class="notification" ng-show="currentPlayer.isCzar">
+			You are Czar
+		</div>
+
+		<div class="notification" ng-show="selectedCard === null">
+			Click a card to select it
+		</div>
+
+		<div class="notification" ng-show="selectedCard !== null && sentCard === null">
+			Click the card again to send it to the czar
+		</div>
+
+
+
+		<div id="card-container">
+			<div class="card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{lockedInCard: card === selectedCard, selectedCard: card === sentCard}">
+				{{card}}
+			</div>
+		</div>
+
 	</ion-content>
 </ion-view>

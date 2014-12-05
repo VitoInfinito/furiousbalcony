@@ -71,6 +71,63 @@
 	float:left;
 }
 
+
+table,td,tr {
+	text-align:center;
+	vertical-align: middle;
+	overflow: hidden;
+	background-color:#444;
+	color:#fff;
+}
+
+table#playerViewTable {
+	width:100%;
+	table-layout: fixed;
+}
+
+tr.indicatorTr {
+	height:0.5em;
+	background-color:green;
+}
+
+tr.playerViewTr {
+	height:2em;
+}
+
+.selectingCard {
+	background-color: #FF0066;
+}
+
+.isCzar {
+	background-color: #FFCC00;
+}
+
+#card-container{
+	margin-top:1em;
+}
+
+.card, .notification {
+	width: 100%;
+	height:2em;
+	margin-top:0.5em;
+	background-color:#DDD;
+	color:#444;
+	text-align: center;
+}
+
+.card {
+	background-color:#444;
+	color:#fff;
+}
+
+.lockedInCard {
+	background-color: #888;
+}
+
+.selectedCard {
+	background-color: #00CCFF;
+}
+
 .text-float-right {
 	position:absolute;
 	right:0;
