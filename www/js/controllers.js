@@ -74,7 +74,7 @@ angular.module('starter.controllers', [])
 .controller('SettingsCtrl', function($scope) {
 })
 
-.controller('GamesCtrl', function($scope, Games) {
+.controller('GamesCtrl', function($scope, $location, Games) {
 
   //var socket;
 
@@ -91,6 +91,7 @@ angular.module('starter.controllers', [])
     Games.createGame()
       .then(function(success) {
         console.info('Game successfully created');
+        $location.url("/tab/game/" + success.data.id);
       });
   }
 
@@ -113,25 +114,35 @@ angular.module('starter.controllers', [])
 
 	//$scope.reload();
   initSocket();
-  /*socket = io(http + '/');
-  socket.on('gameAdded', function(gameList) {
-      console.info('gameAdded');
-      $scope.$apply(function() {
-        $scope.games = gameList;
-      });
-    });*/
-  //socket.emit('testz', { my: 'data' });
-  //socket.emit('joinLobby');
   
 })
 
 .controller('GameDetailCtrl', function($scope, $stateParams, Game) {
     //var socket;
 
+    $scope.selectedCard = null;
+    $scope.sentCard = null;
+    $scope.selectCard = function (card) {
+      if(!$scope.sentCard) {
+        if($scope.selectedCard === card) {
+          $scope.sentCard = card;
+          Game.selectCard($stateParams.gameId, Game.getUserId, card)
+            .then(function(success) {
+              console.info("Card sent successfully");
+              update(success.data);
+            });
+
+        }else {
+          $scope.selectedCard = card;
+        }
+      }
+    };
+
     var update = function(game) { 
       $scope.game = game;
       console.info(game);
       console.info(game.players)
+
       for(i=0; i<$scope.game.players.length; i++) {
         console.info(game.players[i].id + " " + Game.getUserId());
         if($scope.game.players[i].id === Game.getUserId()) {
@@ -143,25 +154,14 @@ angular.module('starter.controllers', [])
 
     };
 
-    $scope.selectedCard = null;
-    $scope.sentCard = null;
-    $scope.selectCard = function (card) {
-      if(!$scope.sentCard) {
-        if($scope.selectedCard === card) {
-          $scope.sentCard = card;
-
-        }else {
-          $scope.selectedCard = card;
-        }
-      }
-    };
+    
 
     $scope.notificationIsCzar = function () {
       return $scope.currentPlayer && $scope.currentPlayer.isCzar;
     };
 
     $scope.notificationSelectCard = function() {
-      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && !$scope.selectedCard;
+      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && !$scope.selectedCard && $scope.game.isStarted;
     };
 
     $scope.notificationSendCard = function() {
@@ -169,12 +169,16 @@ angular.module('starter.controllers', [])
     };
 
     $scope.notificationWaitingOnPlayers = function() {
-      return $scope.currentPlayer && ($scope.currentPlayer.isCzar || $scope.sentCard) && $scope.game.isReadyForScoring;
+      return $scope.currentPlayer && ($scope.currentPlayer.isCzar || $scope.sentCard);
     };
 
     $scope.notificationWaitingOnCzar = function() {
       return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isReadyForScoring;
     };
+
+    $scope.showCzarCardBox = function() {
+      return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring;
+    }
 
 
 
@@ -183,11 +187,6 @@ angular.module('starter.controllers', [])
         .then(function(success) {
           $scope.game = success.data;
         });
-    };
-
-    var renderGame = function(game) {
-      $scope.game = game;
-
     };
 
     $scope.getGame();
@@ -217,7 +216,7 @@ angular.module('starter.controllers', [])
       Game.joinGame($stateParams.gameId, Game.getUserId(), Game.getUserName())
         .then(function(success) {
           console.info("joinGame success");
-        renderGame(success.data);
+        update(success.data);
         initSocket();
         socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
         
