@@ -139,24 +139,42 @@ angular.module('starter.controllers', [])
         }
       }
 
-      console.info("cplayer " + $scope.currentPlayer);
-      console.info("cplayer cards " + $scope.currentPlayer.cards);
-
+      console.info(game);
 
     };
 
     $scope.selectedCard = null;
     $scope.sentCard = null;
-      $scope.selectCard = function (card) {
-        if(!$scope.sentCard) {
-          if($scope.selectedCard === card) {
-            $scope.sentCard = card;
+    $scope.selectCard = function (card) {
+      if(!$scope.sentCard) {
+        if($scope.selectedCard === card) {
+          $scope.sentCard = card;
 
-          }else {
-            $scope.selectedCard = card;
-          }
+        }else {
+          $scope.selectedCard = card;
         }
-      };
+      }
+    };
+
+    $scope.notificationIsCzar = function () {
+      return $scope.currentPlayer && $scope.currentPlayer.isCzar;
+    };
+
+    $scope.notificationSelectCard = function() {
+      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && !$scope.selectedCard;
+    };
+
+    $scope.notificationSendCard = function() {
+      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.selectedCard && !$scope.sentCard;
+    };
+
+    $scope.notificationWaitingOnPlayers = function() {
+      return $scope.currentPlayer && ($scope.currentPlayer.isCzar || $scope.sentCard) && $scope.game.isReadyForScoring;
+    };
+
+    $scope.notificationWaitingOnCzar = function() {
+      return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isReadyForScoring;
+    };
 
 
 
@@ -215,7 +233,7 @@ angular.module('starter.controllers', [])
   $scope.$on('$destroy', function(event) {
     console.info('leaving GameCtrl');
     if($scope.game){
-      Game.leaveGame($scope.game.id, Game.getUserId);
+      Game.leaveGame($scope.game.id, Game.getUserId());
     }
   });
   

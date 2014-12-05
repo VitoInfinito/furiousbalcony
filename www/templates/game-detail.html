@@ -11,25 +11,48 @@
 				    {{player.name}}
 				</td>
 			</tr>
+			<tr class="playerViewTr">
+		    	<td ng-repeat="player in game.players">
+				    {{player.points}}
+				</td>
+			</tr>
 		</table>
 
-		<div class="notification" ng-show="currentPlayer.isCzar">
+		<div id="black-card" class="card" ng-hide="game.currentBlackCard === null">
+			{{game.currentBlackCard}}
+		</div>
+
+		<div class="notification" ng-show="notificationIsCzar()">
 			You are Czar
 		</div>
 
-		<div class="notification" ng-show="selectedCard === null">
+		<div class="notification" ng-show="notificationSelectCard()">
 			Click a card to select it
 		</div>
 
-		<div class="notification" ng-show="selectedCard !== null && sentCard === null">
+		<div class="notification" ng-show="notificationSendCard()">
 			Click the card again to send it to the czar
+		</div>
+
+		<div class="notification" ng-show="notificationWaitingOnPlayers()">
+			Waiting for other players to choose cards
+		</div>
+
+		<div class="notification" ng-show="notificationWaitingOnCzar()">
+			Waiting for Czar to pick a winning card
 		</div>
 
 
 
-		<div id="card-container">
+		<div id="card-container" ng-hide="currentPlayer.isCzar">
 			<div class="card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{lockedInCard: card === selectedCard, selectedCard: card === sentCard}">
 				{{card}}
+			</div>
+		</div>
+
+		<div id="card-container" ng-show="currentPlayer.isCzar">
+			<div class="card" ng-repeat="player in game.players" ng-click="selectCard(card)" ng-class="{lockedInCard: card === selectedCard, selectedCard: card === sentCard}">
+				{{player.}}
 			</div>
 		</div>
 
