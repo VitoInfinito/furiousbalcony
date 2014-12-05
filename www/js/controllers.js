@@ -120,17 +120,26 @@ angular.module('starter.controllers', [])
 .controller('GameDetailCtrl', function($scope, $stateParams, Game) {
     //var socket;
 
+    $scope.chosenWhiteCards = [];
     $scope.selectedCard = null;
     $scope.sentCard = null;
     $scope.selectCard = function (card) {
       if(!$scope.sentCard) {
         if($scope.selectedCard === card) {
           $scope.sentCard = card;
-          Game.selectCard($stateParams.gameId, Game.getUserId(), card)
-            .then(function(success) {
-              console.info("Card sent successfully");
-              update(success.data);
-            });
+          if(!$scope.currentPlayer.isCzar) {
+            Game.selectCard($stateParams.gameId, Game.getUserId(), card)
+              .then(function(success) {
+                console.info("Card sent successfully");
+                update(success.data);
+              });
+            }else {
+              Game.selectWinningCard($stateParams.gameId, card)
+                .then(function(success) {
+                  console.info("Winning Card sent successfully");
+                  update(success.data);
+                });
+            }
 
         }else {
           $scope.selectedCard = card;
@@ -140,18 +149,21 @@ angular.module('starter.controllers', [])
 
     var update = function(game) { 
       $scope.game = game;
+      $scope.chosenWhiteCards = [];
       console.info(game);
       console.info(game.players)
 
-      for(i=0; i<$scope.game.players.length; i++) {
+      for(i=0; i<game.players.length; i++) {
         console.info(game.players[i].id + " " + Game.getUserId());
-        if($scope.game.players[i].id === Game.getUserId()) {
-          $scope.currentPlayer = $scope.game.players[i];
+        if(game.players[i].id === Game.getUserId()) {
+          $scope.currentPlayer = game.players[i];
+        }
+
+        if(game.isReadyForScoring && !game.players[i].isCzar) {
+          $scope.chosenWhiteCards.push(game.players[i].selectedWhiteCardId);
         }
       }
-
       console.info(game);
-
     };
 
     
@@ -169,11 +181,11 @@ angular.module('starter.controllers', [])
     };
 
     $scope.notificationWaitingOnPlayers = function() {
-      return $scope.currentPlayer && ($scope.currentPlayer.isCzar || $scope.sentCard);
+      return $scope.currentPlayer && ($scope.currentPlayer.isCzar || $scope.sentCard) && !$scope.game.isReadyForScoring;
     };
 
     $scope.notificationWaitingOnCzar = function() {
-      return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isReadyForScoring;
+      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring;
     };
 
     $scope.showCzarCardBox = function() {

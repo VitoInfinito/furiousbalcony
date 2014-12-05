@@ -45,14 +45,14 @@
 
 
 		<div id="card-container" ng-show="game.isStarted && !currentPlayer.isCzar">
-			<div class="card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{lockedInCard: card === selectedCard, selectedCard: card === sentCard}">
+			<div class="card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
 				{{card}}
 			</div>
 		</div>
 
 		<div id="card-container" ng-show="showCzarCardBox()">
-			<div class="card" ng-repeat="player in game.players" ng-click="selectCard(card)" ng-class="{lockedInCard: card === selectedCard, selectedCard: card === sentCard}">
-				{{player.selectedWhiteCardId}}
+			<div class="card" ng-repeat="card in chosenWhiteCards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
+				{{card}}
 			</div>
 		</div>
 
