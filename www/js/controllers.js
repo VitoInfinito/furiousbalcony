@@ -126,7 +126,7 @@ angular.module('starter.controllers', [])
       if(!$scope.sentCard) {
         if($scope.selectedCard === card) {
           $scope.sentCard = card;
-          Game.selectCard($stateParams.gameId, Game.getUserId, card)
+          Game.selectCard($stateParams.gameId, Game.getUserId(), card)
             .then(function(success) {
               console.info("Card sent successfully");
               update(success.data);
