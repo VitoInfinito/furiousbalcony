@@ -39,6 +39,10 @@
 	width:100%;
 }
 
+.button {
+	border: none !important;
+}
+
 .fb-text-input {
 	font-size: 1em !important;
 	padding: 0em 1em !important;
@@ -70,7 +74,6 @@
 	width:50%;
 	float:left;
 }
-
 
 table,td,tr {
 	text-align:center;

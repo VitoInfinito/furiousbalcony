@@ -66,6 +66,9 @@ angular.module('starter.services', [])
       readyForNextRound: function(gameId, playerId) {
         return $http.post(http + "/readyForNextRound", {gameId: gameId, playerId: playerId});
       },
+      startGame: function(gameId) {
+        return $http.post(http + "startGame", {gameId: gameId});
+      },
       getUserId: function() {
         return user.id;
       },

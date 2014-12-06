@@ -210,11 +210,23 @@ angular.module('starter.controllers', [])
       return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.game.isStarted && !$scope.game.isReadyForScoring;
     };
 
+    $scope.showStartGameButton = function() {
+      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer.isCzar;
+    };
+
+    $scope.startGame = function() {
+      Game.startGame($stateParams.gameId)
+        .then(function(success) {
+          update(success.data);
+        });
+    };
+
 
     $scope.getGame = function() {
-      Game.fetchGame($stateParams.gameId, update)
+      Game.fetchGame($stateParams.gameId)
         .then(function(success) {
           $scope.game = success.data;
+          update(success.data);
         });
     };
 
