@@ -2,27 +2,136 @@
 	background-color: #F5CC45 !important;
 }
 
+.statusfield {
+	text-align: center;
+	margin-top: 1em;
+	color:black;
+}
+
+.error {
+	/*color:red;*/
+}
+
+.fb-basic {
+	border-radius: 5px !important;
+	background-color: white;
+}
+
 .fb-button {
-	
 	cursor:pointer;
-	display:inline-block;
-	margin:0.4em;
+	display: inline-block;
+	border: 1px solid #aaa;
+	margin: 5px 0px;
+	padding: 0.3em 1em;
+	box-shadow: 0 0 0 rgba(0, 0, 0, 0.075);
 }
 
 .fb-button:hover {
-	color:#888888;
+	background-color:#ccc;
+}
+
+.fb-name-button {
+	padding-top:0.2em;
+	height: 2em;
+	display: inline-block;
+	text-align: center;
+	vertical-align: middle;
+	width:100%;
+}
+
+.fb-text-input {
+	font-size: 1em !important;
+	padding: 0em 1em !important;
+	border: 1px solid #ddd !important;
+	height: 2em !important;
+	color:#666 !important;
+
+	transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+}
+
+.fb-text-input:focus {
+	border-color: rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 10px rgba(0, 0, 0, 0.6);
+    outline: 0 none;
+}
+
+#welcome {
+	text-align: center;
 }
 
 #gameListHead {
-	font-size:1em;
+	font-size:1.2em;
+	margin-top:1.2em;
 	margin-left:1em;
-	margin-right:4em;
 	height:2em;
 }
 
 .gameListItem {
 	width:50%;
 	float:left;
+}
+
+
+table,td,tr {
+	text-align:center;
+	vertical-align: middle;
+	overflow: hidden;
+	background-color:#444;
+	color:#fff;
+}
+
+table#playerViewTable {
+	width:100%;
+	table-layout: fixed;
+}
+
+tr.indicatorTr {
+	height:0.5em;
+	background-color:green;
+}
+
+tr.playerViewTr {
+	height:2em;
+}
+
+.selectingCard {
+	background-color: #FF0066;
+}
+
+.isCzar {
+	background-color: #FFCC00;
+}
+
+#card-container{
+	margin-top:1em;
+}
+
+.card, .notification {
+	width: 100%;
+	min-height:2em;
+	margin-top:0.5em;
+	background-color:#FFCC00;
+	color:#444;
+	text-align: center;
+}
+
+.card {
+	background-color:#ddd;
+	color:#444;
+}
+
+#black-card {
+	background-color: #444;
+	color:#fff;
+	margin-top:1em;
+}
+
+.clickedCard {
+	background-color: #aaa;
+}
+
+.selectedCard {
+	background-color: #00CCFF;
 }
 
 .text-float-right {

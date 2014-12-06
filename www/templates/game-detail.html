@@ -1,4 +1,70 @@
 <ion-view title="{{game.name}}">
-  <ion-content has-header="true" padding="true">
-  </ion-content>
+	<ion-content has-header="true" padding="true">
+
+		<table id="playerViewTable">
+			<tr class="indicatorTr">
+		    	<td class="selectingCard" ng-repeat="player in game.players" ng-class="{isCzar: player.isCzar, selectedCard: player.selectedWhiteCardId !== null}">
+				</td>
+			</tr>
+			<tr class="playerViewTr">
+		    	<td ng-repeat="player in game.players">
+				    {{player.name}}
+				</td>
+			</tr>
+			<tr class="playerViewTr">
+		    	<td ng-repeat="player in game.players">
+				    {{player.points}}
+				</td>
+			</tr>
+		</table>
+
+		<div id="black-card" class="card" ng-hide="game.currentBlackCard === null">
+			{{game.currentBlackCard}}
+		</div>
+
+		<div class="notification" ng-show="notificationIsCzar()">
+			You are Czar
+		</div>
+
+		<div class="notification" ng-show="notificationSelectCard()">
+			Click a card to select it
+		</div>
+
+		<div class="notification" ng-show="notificationSendCard()">
+			Click the card again to send it to the czar
+		</div>
+
+		<div class="notification" ng-show="notificationWaitingOnPlayers()">
+			Waiting for other players to choose cards
+		</div>
+
+		<div class="notification" ng-show="notificationWaitingOnCzar()">
+			Waiting for Czar to pick a winning card
+		</div>
+
+		<div class="notification" ng-show="notificationNextRound()">
+			Next round will begin shortly
+		</div>
+
+
+
+		<div id="card-container" ng-show="showCardBox()">
+			<div class="card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
+				{{card}}
+			</div>
+		</div>
+
+		<div id="card-container" ng-show="showCzarCardBox()">
+			<div class="card" ng-repeat="card in chosenWhiteCards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
+				{{card}}
+			</div>
+		</div>
+
+		<div id="card-container" ng-show="showReviewCardBox()">
+			<div class="card" ng-repeat="card in chosenWhiteCards" ng-class="{selectedCard: card === game.winningCardId}">
+				{{card}}
+			</div>
+		</div>
+
+	</ion-content>
 </ion-view>
