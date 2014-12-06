@@ -163,21 +163,27 @@ angular.module('starter.controllers', [])
           $scope.chosenWhiteCards.push(game.players[i].selectedWhiteCardId);
         }
       }
+
+      if(game.isReadyForReview) {
+        $scope.selectedCard = null;
+        $scope.sentCard = null;
+      }
+
       console.info(game);
     };
 
     
 
     $scope.notificationIsCzar = function () {
-      return $scope.currentPlayer && $scope.currentPlayer.isCzar;
+      return $scope.currentPlayer && $scope.currentPlayer.isCzar && !$scope.game.isReadyForReview;
     };
 
     $scope.notificationSelectCard = function() {
-      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && !$scope.selectedCard && $scope.game.isStarted;
+      return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && !$scope.selectedCard && $scope.game.isStarted;
     };
 
     $scope.notificationSendCard = function() {
-      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.selectedCard && !$scope.sentCard;
+      return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && $scope.selectedCard && !$scope.sentCard;
     };
 
     $scope.notificationWaitingOnPlayers = function() {
@@ -185,13 +191,24 @@ angular.module('starter.controllers', [])
     };
 
     $scope.notificationWaitingOnCzar = function() {
-      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring;
+      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring && !$scope.game.isReadyForReview;
+    };
+
+    $scope.notificationNextRound = function() {
+      return $scope.game && $scope.game.isReadyForReview;
     };
 
     $scope.showCzarCardBox = function() {
-      return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring;
-    }
+      return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring && !$scope.game.isReadyForReview;
+    };
 
+    $scope.showReviewCardBox = function() {
+      return $scope.currentPlayer && $scope.game.isStarted && $scope.game.isReadyForReview;
+    };
+
+    $scope.showCardBox = function() {
+      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.game.isStarted && !$scope.game.isReadyForScoring;
+    };
 
 
     $scope.getGame = function() {

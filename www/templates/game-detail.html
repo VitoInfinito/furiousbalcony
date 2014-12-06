@@ -42,9 +42,13 @@
 			Waiting for Czar to pick a winning card
 		</div>
 
+		<div class="notification" ng-show="notificationNextRound()">
+			Next round will begin shortly
+		</div>
 
 
-		<div id="card-container" ng-show="game.isStarted && !currentPlayer.isCzar">
+
+		<div id="card-container" ng-show="showCardBox()">
 			<div class="card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
 				{{card}}
 			</div>
@@ -52,6 +56,12 @@
 
 		<div id="card-container" ng-show="showCzarCardBox()">
 			<div class="card" ng-repeat="card in chosenWhiteCards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
+				{{card}}
+			</div>
+		</div>
+
+		<div id="card-container" ng-show="showReviewCardBox()">
+			<div class="card" ng-repeat="card in chosenWhiteCards" ng-class="{selectedCard: card === game.winningCardId}">
 				{{card}}
 			</div>
 		</div>

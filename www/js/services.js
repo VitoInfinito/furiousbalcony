@@ -61,7 +61,7 @@ angular.module('starter.services', [])
         return $http.post(http + "/selectCard", {gameId: gameId, playerId: playerId, card: card});
       },
       selectWinningCard: function(gameId, card) {
-        return $http.post(http + "/selectWinner", {gameId: gameId, cardId: card});
+        return $http.post(http + "/selectWinningCard", {gameId: gameId, card: card});
       },
       readyForNextRound: function(gameId, playerId) {
         return $http.post(http + "/readyForNextRound", {gameId: gameId, playerId: playerId});
