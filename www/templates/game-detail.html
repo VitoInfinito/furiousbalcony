@@ -1,25 +1,40 @@
 <ion-view title="{{game.name}}">
 	<ion-content has-header="true" padding="true">
-		<ion-nav-buttons side="right">
-			<button class="button" ng-show="showStartGameButton()" ng-click="startGame()">dsa</button>
-	    </ion-nav-buttons>
 
 		<table id="playerViewTable">
 			<tr class="indicatorTr">
-		    	<td class="selectingCard" ng-repeat="player in game.players" ng-class="{isCzar: player.isCzar, selectedCard: player.selectedWhiteCardId !== null}">
+		    	<td class="selectingCard" ng-repeat="player in getFirstRowOfPlayers()" ng-class="{isCzar: player.isCzar, selectedCard: player.selectedWhiteCardId !== null}">
 				</td>
 			</tr>
 			<tr class="playerViewTr">
-		    	<td ng-repeat="player in game.players">
+		    	<td ng-repeat="player in getFirstRowOfPlayers()">
 				    {{player.name}}
 				</td>
 			</tr>
 			<tr class="playerViewTr">
-		    	<td ng-repeat="player in game.players">
+		    	<td ng-repeat="player in getFirstRowOfPlayers()">
 				    {{player.points}}
 				</td>
 			</tr>
 		</table>
+		<table id="playerViewTable" ng-show="isTwoRows()">
+			<tr class="indicatorTr">
+		    	<td class="selectingCard" ng-repeat="player in getLastRowOfPlayers()" ng-class="{isCzar: player.isCzar, selectedCard: player.selectedWhiteCardId !== null}">
+				</td>
+			</tr>
+			<tr class="playerViewTr">
+		    	<td ng-repeat="player in getLastRowOfPlayers()">
+				    {{player.name}}
+				</td>
+			</tr>
+			<tr class="playerViewTr">
+		    	<td ng-repeat="player in getLastRowOfPlayers()">
+				    {{player.points}}
+				</td>
+			</tr>
+		</table>
+
+
 
 		<div class="fb-basic fb-button fb-name-button" ng-show="showStartGameButton()" ng-click="startGame()">Start game</div>
 

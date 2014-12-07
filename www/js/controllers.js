@@ -120,6 +120,7 @@ angular.module('starter.controllers', [])
 
 .controller('GameDetailCtrl', function($scope, $stateParams, Game) {
     //var socket;
+    var playersPerRow = 4;
 
     $scope.chosenWhiteCards = [];
     $scope.selectedCard = null;
@@ -147,6 +148,26 @@ angular.module('starter.controllers', [])
         }
       }
     };
+
+    $scope.isTwoRows = function() {
+      return $scope.game && $scope.game.players.length > playersPerRow;
+    }
+
+    $scope.getFirstRowOfPlayers = function(){
+      if($scope.game && $scope.game.players) {
+        return $scope.game.players.slice(0, $scope.game.players.length > playersPerRow ? playersPerRow : $scope.game.players.length);
+      }
+      return []
+    };
+
+    $scope.getLastRowOfPlayers = function(){
+      if($scope.game && $scope.game.players && $scope.isTwoRows()) {
+        return $scope.game.players.slice(playersPerRow, $scope.game.players.length);
+      }
+      return [];
+    };
+
+
 
     var update = function(game) { 
       $scope.game = game;
@@ -239,7 +260,7 @@ angular.module('starter.controllers', [])
 
 
 
-    function initSocket() {
+    function initGameSocket() {
       socket.on('updateGame', function(game) {
         console.info('updateGame');
         $scope.$apply(function() {
@@ -262,9 +283,9 @@ angular.module('starter.controllers', [])
       Game.joinGame($stateParams.gameId, Game.getUserId(), Game.getUserName())
         .then(function(success) {
           console.info("joinGame success");
-        update(success.data);
-        initSocket();
-        socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
+          update(success.data);
+          initGameSocket();
+          socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
         
       },
       function(error) {
