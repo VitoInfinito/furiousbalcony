@@ -96,15 +96,7 @@ angular.module('starter.controllers', [])
       });
   }
 
-  function initSocket() {
-    //socket = io.connect(http + '/');
-
-    socket.on('connect', function() {
-      console.info('lobby socket connect');
-      //socket.emit('test');
-      $scope.reload();
-    });
-    
+  function initGameListSocket() {
     socket.on('gameAdded', function(gameList) {
       console.info('gameAdded');
       $scope.$apply(function() {
@@ -114,7 +106,7 @@ angular.module('starter.controllers', [])
   }
 
 	$scope.reload();
-  initSocket();
+  initGameListSocket();
   
 })
 
@@ -172,11 +164,8 @@ angular.module('starter.controllers', [])
     var update = function(game) { 
       $scope.game = game;
       $scope.chosenWhiteCards = [];
-      console.info(game);
-      console.info(game.players)
 
       for(i=0; i<game.players.length; i++) {
-        console.info(game.players[i].id + " " + Game.getUserId());
         if(game.players[i].id === Game.getUserId()) {
           $scope.currentPlayer = game.players[i];
         }
@@ -190,8 +179,6 @@ angular.module('starter.controllers', [])
         $scope.selectedCard = null;
         $scope.sentCard = null;
       }
-
-      console.info(game);
     };
 
     
@@ -272,10 +259,6 @@ angular.module('starter.controllers', [])
         $scope.$apply(function() {
           $scope.gameError = errorMsg;
         });
-      });
-
-      socket.on('testx', function(data) {
-        console.info(data);
       });
     };
     
