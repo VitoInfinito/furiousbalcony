@@ -27,6 +27,7 @@ angular.module('starter.controllers', [])
                 hasUsername = true;
                 //Makes other tabs visible
                 $rootScope.hasUsername = true;
+                socket = io.connect(http + '/');
               }
             });
   };
@@ -96,7 +97,7 @@ angular.module('starter.controllers', [])
   }
 
   function initSocket() {
-    socket = io.connect(http + '/');
+    //socket = io.connect(http + '/');
 
     socket.on('connect', function() {
       console.info('lobby socket connect');
@@ -112,7 +113,7 @@ angular.module('starter.controllers', [])
     });
   }
 
-	//$scope.reload();
+	$scope.reload();
   initSocket();
   
 })
@@ -179,7 +180,7 @@ angular.module('starter.controllers', [])
     };
 
     $scope.notificationSelectCard = function() {
-      return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && !$scope.selectedCard && $scope.game.isStarted;
+      return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && !$scope.selectedCard && $scope.game.isStarted && !$scope.game.isReadyForReview;
     };
 
     $scope.notificationSendCard = function() {
@@ -198,6 +199,10 @@ angular.module('starter.controllers', [])
       return $scope.game && $scope.game.isReadyForReview;
     };
 
+    $scope.notificationWaitingOnPlayersToJoin = function() {
+      return $scope.game && !$scope.game.isStarted && $scope.game.players.length < 3;
+    };
+
     $scope.showCzarCardBox = function() {
       return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring && !$scope.game.isReadyForReview;
     };
@@ -211,7 +216,7 @@ angular.module('starter.controllers', [])
     };
 
     $scope.showStartGameButton = function() {
-      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer.isCzar;
+      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id;
     };
 
     $scope.startGame = function() {

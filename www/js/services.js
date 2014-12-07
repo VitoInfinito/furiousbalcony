@@ -39,7 +39,7 @@ angular.module('starter.services', [])
         return games[gameId];
       },
       createGame: function() {
-        return $http.post(http + '/addGame', { name: user.name + "'s game" });
+        return $http.post(http + '/addGame', { name: user.name + "'s game", isOwner: user.id });
       }
     }
 }])
@@ -67,7 +67,7 @@ angular.module('starter.services', [])
         return $http.post(http + "/readyForNextRound", {gameId: gameId, playerId: playerId});
       },
       startGame: function(gameId) {
-        return $http.post(http + "startGame", {gameId: gameId});
+        return $http.post(http + "/startGame", {gameId: gameId});
       },
       getUserId: function() {
         return user.id;
