@@ -39,9 +39,6 @@ angular.module('starter.controllers', [])
   };
 
   $scope.dash = {
-    exampleFunction: function() {
-      alert($scope.dash.checkname);
-    },
     checkUsername: function() {
       if(!$scope.dash.checkname) {
         setStatusText("Please enter a name");
@@ -77,7 +74,14 @@ angular.module('starter.controllers', [])
 
 .controller('GamesCtrl', function($scope, $location, Games) {
 
-  //var socket;
+  var initGameListSocket = function() {
+    socket.on('gameAdded', function(gameList) {
+      console.info('gameAdded');
+      $scope.$apply(function() {
+        $scope.games = gameList;
+      });
+    });
+  };
 
 	$scope.reload = function() {
 		Games.fetchGames()
@@ -96,14 +100,6 @@ angular.module('starter.controllers', [])
       });
   }
 
-  function initGameListSocket() {
-    socket.on('gameAdded', function(gameList) {
-      console.info('gameAdded');
-      $scope.$apply(function() {
-        $scope.games = gameList;
-      });
-    });
-  }
 
 	$scope.reload();
   initGameListSocket();
@@ -114,6 +110,58 @@ angular.module('starter.controllers', [])
     //var socket;
     var playersPerRow = 4;
 
+    var update = function(game) { 
+      $scope.game = game;
+      $scope.chosenWhiteCards = [];
+
+      for(i=0; i<game.players.length; i++) {
+        if(game.players[i].id === Game.getUserId()) {
+          $scope.currentPlayer = game.players[i];
+        }
+
+        if(game.isReadyForScoring && !game.players[i].isCzar) {
+          $scope.chosenWhiteCards.push(game.players[i].selectedWhiteCardId);
+        }
+      }
+
+      if(game.isReadyForReview) {
+        $scope.selectedCard = null;
+        $scope.sentCard = null;
+      }
+    };
+
+    var initGameSocket = function() {
+      socket.on('updateGame', function(game) {
+        console.info('updateGame');
+        $scope.$apply(function() {
+          update(game);
+        });
+      });
+      
+      socket.on('gameError', function(errorMsg) {
+        $scope.$apply(function() {
+          $scope.gameError = errorMsg;
+        });
+      });
+    };
+    
+    var joinGame = function() {
+      $scope.getGame();
+      Game.joinGame($stateParams.gameId, Game.getUserId(), Game.getUserName())
+        .then(function(success) {
+          console.info("joinGame success");
+          update(success.data);
+          initGameSocket();
+          socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
+      },
+      function(error) {
+        console.info("joinGame error")
+        $scope.gameError = error.data.error;
+      });
+    };
+
+
+    /**Code for holding the selected and sent card for both player and czar**/
     $scope.chosenWhiteCards = [];
     $scope.selectedCard = null;
     $scope.sentCard = null;
@@ -141,6 +189,22 @@ angular.module('starter.controllers', [])
       }
     };
 
+    $scope.startGame = function() {
+      Game.startGame($stateParams.gameId)
+        .then(function(success) {
+          update(success.data);
+        });
+    };
+
+    $scope.getGame = function() {
+      Game.fetchGame($stateParams.gameId)
+        .then(function(success) {
+          $scope.game = success.data;
+          update(success.data);
+        });
+    };
+
+    /**Fetching of players for the two possible rows of people in gui**/
     $scope.isTwoRows = function() {
       return $scope.game && $scope.game.players.length > playersPerRow;
     }
@@ -159,30 +223,8 @@ angular.module('starter.controllers', [])
       return [];
     };
 
-
-
-    var update = function(game) { 
-      $scope.game = game;
-      $scope.chosenWhiteCards = [];
-
-      for(i=0; i<game.players.length; i++) {
-        if(game.players[i].id === Game.getUserId()) {
-          $scope.currentPlayer = game.players[i];
-        }
-
-        if(game.isReadyForScoring && !game.players[i].isCzar) {
-          $scope.chosenWhiteCards.push(game.players[i].selectedWhiteCardId);
-        }
-      }
-
-      if(game.isReadyForReview) {
-        $scope.selectedCard = null;
-        $scope.sentCard = null;
-      }
-    };
-
     
-
+    /**Notifications and show $scope functions**/
     $scope.notificationIsCzar = function () {
       return $scope.currentPlayer && $scope.currentPlayer.isCzar && !$scope.game.isReadyForReview;
     };
@@ -226,65 +268,16 @@ angular.module('starter.controllers', [])
     $scope.showStartGameButton = function() {
       return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id;
     };
-
-    $scope.startGame = function() {
-      Game.startGame($stateParams.gameId)
-        .then(function(success) {
-          update(success.data);
-        });
-    };
-
-
-    $scope.getGame = function() {
-      Game.fetchGame($stateParams.gameId)
-        .then(function(success) {
-          $scope.game = success.data;
-          update(success.data);
-        });
-    };
-
-    $scope.getGame();
-
-
-
-    function initGameSocket() {
-      socket.on('updateGame', function(game) {
-        console.info('updateGame');
-        $scope.$apply(function() {
-          update(game);
-        });
-      });
-      
-      socket.on('gameError', function(errorMsg) {
-        $scope.$apply(function() {
-          $scope.gameError = errorMsg;
-        });
-      });
-    };
     
-    function joinGame() {
-      Game.joinGame($stateParams.gameId, Game.getUserId(), Game.getUserName())
-        .then(function(success) {
-          console.info("joinGame success");
-          update(success.data);
-          initGameSocket();
-          socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
-        
-      },
-      function(error) {
-        console.info("joinGame error")
-        $scope.gameError = error.data.error;
-    });
-  };
 
-  joinGame();
+    joinGame();
 
-  $scope.$on('$destroy', function(event) {
-    console.info('leaving GameCtrl');
-    if($scope.game){
-      Game.leaveGame($scope.game.id, Game.getUserId());
-    }
-  });
+/*    $scope.$on('$destroy', function(event) {
+      console.info('leaving GameCtrl');
+      if($scope.game){
+        Game.leaveGame($scope.game.id, Game.getUserId());
+      }
+    });*/
   
     
 });
