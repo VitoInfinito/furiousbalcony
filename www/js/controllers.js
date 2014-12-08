@@ -258,7 +258,7 @@ angular.module('starter.controllers', [])
     };
 
     $scope.showReviewCardBox = function() {
-      return $scope.currentPlayer && $scope.game.isStarted && $scope.game.isReadyForReview;
+      return $scope.currentPlayer && $scope.game.isStarted && ($scope.game.isReadyForReview || (!$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring));
     };
 
     $scope.showCardBox = function() {
