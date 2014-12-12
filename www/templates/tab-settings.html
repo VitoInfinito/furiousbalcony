@@ -1,5 +1,26 @@
 <ion-view title="Settings">
   <ion-content class="padding">
-    <h1>Settings</h1>
+
+  	<h3>Night mode</h3>
+  	
+
+  	<h3>Change username</h3>
+
+
+
+
+
+	<h3>Change username</h3>
+    <form role="form">
+		<div>
+		    <input ng-model="dash.checkname" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name">
+		</div>
+	</form>
+	<div class="fb-basic fb-button fb-name-button" ng-click="dash.checkUsername()">Change name</div>
+
+	<div id="dash-stat" class="statusfield error">{{errormsg}}</div>
+
+
+
   </ion-content>
 </ion-view>

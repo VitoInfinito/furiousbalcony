@@ -9,7 +9,7 @@ angular.module('starter.controllers', [])
   var setStatusText = function(msg) {
     //TODO Toast (popup message that fades away)
     document.getElementById("dash-stat").style.color = "red";
-        $scope.dash.errormsg = msg;
+        $scope.errormsg = msg;
         setTimeout(function() {
           document.getElementById("dash-stat").style.color = "black";
 
@@ -27,10 +27,22 @@ angular.module('starter.controllers', [])
                 hasUsername = true;
                 //Makes other tabs visible
                 $rootScope.hasUsername = true;
-                socket = io.connect(http + '/');
+                initSocket();
               }
             });
   };
+
+  var initSocket = function() {
+      socket = io.connect(http + '/');
+
+      socket.removeListener('gameAdded');
+      
+      socket.on('gameError', function(errorMsg) {
+        $scope.$apply(function() {
+          $scope.gameError = errorMsg;
+        });
+      });
+    };
 
   var connectionCallback = function(connected) {
     if(connected) {
@@ -38,6 +50,7 @@ angular.module('starter.controllers', [])
     }
   };
 
+  $scope.errormsg =  "";
   $scope.dash = {
     checkUsername: function() {
       if(!$scope.dash.checkname) {
@@ -51,8 +64,9 @@ angular.module('starter.controllers', [])
     },
     connected: false,
     hasUsername: false,
-    errormsg: ""
   };
+
+
 
   if(hasUsername) {
     $scope.dash.hasUsername = true;
@@ -70,6 +84,12 @@ angular.module('starter.controllers', [])
 })
 
 .controller('SettingsCtrl', function($scope) {
+
+  socket.removeListener('gameAdded');
+
+
+
+
 })
 
 .controller('GamesCtrl', function($scope, $location, Games) {
@@ -113,6 +133,7 @@ angular.module('starter.controllers', [])
     var update = function(game) { 
       $scope.game = game;
       $scope.chosenWhiteCards = [];
+      console.info(game);
 
       for(i=0; i<game.players.length; i++) {
         if(game.players[i].id === Game.getUserId()) {
@@ -131,6 +152,8 @@ angular.module('starter.controllers', [])
     };
 
     var initGameSocket = function() {
+      socket.removeListener('gameAdded');
+      socket.removeListener('updateGame');
       socket.on('updateGame', function(game) {
         console.info('updateGame');
         $scope.$apply(function() {
