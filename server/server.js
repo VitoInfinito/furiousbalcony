@@ -28,14 +28,17 @@ function returnGame(gameId, res) { res.json(gameViewModel(gameId)); };
 function broadcastGame(gameId) {
 	if(gameId) {
 		var vm = gameViewModel(gameId);
-		io.to(gameId).emit('updateGame', vm);
+		if(vm) io.to(gameId).emit('updateGame', vm);
 	}
 };
 
 function gameViewModel(gameId) {
 	var game = Game.getGame(gameId);
-	var viewModel = JSON.parse(JSON.stringify(game));
-	delete viewModel.deck;
+	var viewModel = null;
+	if(game) {
+		viewModel = JSON.parse(JSON.stringify(game));
+		delete viewModel.deck;
+	}
 	return viewModel;
 }
 
@@ -52,20 +55,33 @@ io.sockets.on('connection', function(socket) {
 	socket.on('connectToGame', function(data) {
 		var game = Game.getGame(data.gameId);
 		if(game) {
-			console.log('User connecting to game with id ' + data.gameId);
-//			socket.leave('lobbyRoom');
-			
-			socket.join(data.gameId);
-			//io.to(data.gameId).emit('testx', 'hi there');
+			if(socket.gameId != game.id) {
+				console.log('User connecting to game with id ' + data.gameId);
+				//socket.leave('lobbyRoom');
+				//console.log("got in anyway");
+				socket.join(data.gameId);
+				socket.gameId = game.id;
+				//broadcastGame(data.gameId);
+			}else {
+						
+			}
 			broadcastGame(data.gameId);
 		} else {
-			socket.emit('error', 'Invalid Game ID');
+			//console.log("before error");
+			//TODO fix error emits
+			//socket.emit('error', 'Invalid Game ID');
+			//console.log("after error");
 		}
 	});
 
 	socket.on('joinLobby', function() {
 		console.log("User joined lobby");
 		socket.join('lobbyRoom');
+	});
+
+	socket.on('addUserInformation', function(data) {
+		socket.userId = data.userId;
+		socket.userName = data.userName;
 	});
 
 	socket.on('disconnect', function() {
@@ -77,6 +93,17 @@ io.sockets.on('connection', function(socket) {
 			Game.departGame(socket.gameId, socket.playerId);
 			lobbySocket.emit('gameAdded', Game.list());
 		}
+
+		if(socket.userId && socket.userName) {
+			var games = Game.getGamesUserIsIn(socket.userId);
+			for(i=0; i<games.length; i++) {
+				Game.leaveGame(games[i], socket.userId);
+			}
+			io.to('lobbyRoom').emit('gameAdded', Game.list());
+			Game.removeUsername(socket.userName);
+		}
+
+
 	});
 });
 		
@@ -84,7 +111,11 @@ app.get('/list', function(req, res) { ;res.json(Game.list()); });
 app.get('/checkConnection', function(req, res) { res.send("ok")});
 app.get('/checkName', function(req, res) {	
 	if(!Game.checkIfNameTaken(req.query.name)) {
-		Game.addUsername(req.query.name);
+		Game.addUsername(req.query.name, req.query.id);
+		var games = Game.getGamesUserIsIn(req.query.id);
+		for(i=0; i<games.length; i++) {
+			broadcastGame(games[i].id);
+		}
 		res.send('free');
 	}else {
 		res.send("taken")
@@ -109,7 +140,7 @@ app.post('/joingame', function(req, res) {
 		return null;
 	}
 
-	if(game.isStarted || game.players.length >= 4) {
+	if((game.isStarted || game.players.length >= Game.getMaxPlayersPerGame) && !Game.isPlayerPartOfGame(req.body.gameId, req.body.playerId)) {
 		res.writeHead(500, { 'Content-Type': 'application/json' });
 		res.write(JSON.stringify({ error: "too many players" }));
 		res.end();
@@ -117,7 +148,7 @@ app.post('/joingame', function(req, res) {
 	}
 
 	game = Game.joinGame(game, { id: req.body.playerId, name: req.body.playerName });
-	
+
 	returnGame(req.body.gameId, res);
 	//lobbySocket.emit('gameAdded', Game.list());
 	io.to('lobbyRoom').emit('gameAdded', Game.list());
@@ -144,8 +175,14 @@ app.post('/selectWinningCard', function(req, res) {
 	returnGame(req.body.gameId, res);
 });
 
-app.post('/ready', function(req, res){
-	Game.readyForNextRound(req.body.gameId, req.body.playerId);
+app.post('/ready', function(req, res) {
+//	Game.readyForNextRound(req.body.gameId, req.body.playerId);
+	broadcastGame(req.body.gameId);
+	returnGame(req.body.gameId, res);
+});
+
+app.post('/startGame', function(req, res) {
+	Game.startGame(req.body.gameId);
 	broadcastGame(req.body.gameId);
 	returnGame(req.body.gameId, res);
 });

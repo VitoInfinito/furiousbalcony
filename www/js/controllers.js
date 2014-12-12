@@ -83,11 +83,49 @@ angular.module('starter.controllers', [])
 
 })
 
-.controller('SettingsCtrl', function($scope) {
+.controller('SettingsCtrl', function($scope, SettingsService) {
+
+  var setStatusText = function(msg) {
+    //TODO Toast (popup message that fades away)
+    document.getElementById("settings-stat").style.color = "red";
+        $scope.errormsg = msg;
+        setTimeout(function() {
+          document.getElementById("settings-stat").style.color = "black";
+
+        }, 200);
+  };
 
   socket.removeListener('gameAdded');
+  //$scope.currentName = "yrwq";
 
+  var sendNameToServer = function(name) {
+    SettingsService.checkAndSetName(name)
+        .then(function(success) {
+            if(success.data === "taken") {
+              setStatusText("Name " + name + " was taken.");
+            }else {
+              SettingsService.setLocalName(name);
+            }
+        });
+  }
 
+  $scope.dash = {
+    changeUsername: function() {
+      if(!$scope.dash.currentName) {
+        setStatusText("Please enter a name");
+      }else if(!$scope.dash.connected) {
+        setStatusText("There is currently no connection to the server. Please try again later");
+        //SettingsService.checkConnection(connectionCallback);
+      }else if($scope.dash.currentName === SettingsService.getName()) {
+        setStatusText("That is already your username");
+      }else {
+        sendNameToServer($scope.dash.currentName);
+        setStatusText("Successfully changed username to " + $scope.dash.currentName);
+      }
+    },
+    currentName : SettingsService.getName(),
+    connected : true
+  };
 
 
 })
@@ -130,20 +168,22 @@ angular.module('starter.controllers', [])
     //var socket;
     var playersPerRow = 4;
 
-    var update = function(game) { 
-      $scope.game = game;
+    var update = function(game) {
       $scope.chosenWhiteCards = [];
-      console.info(game);
-
       for(i=0; i<game.players.length; i++) {
         if(game.players[i].id === Game.getUserId()) {
           $scope.currentPlayer = game.players[i];
+        }else {
+          delete game.players[i].cards;
         }
 
         if(game.isReadyForScoring && !game.players[i].isCzar) {
           $scope.chosenWhiteCards.push(game.players[i].selectedWhiteCardId);
+          delete game.players[i].selectedWhiteCardId;
         }
       }
+      $scope.game = game;
+      console.info(game);
 
       if(game.isReadyForReview) {
         $scope.selectedCard = null;

@@ -1,5 +1,6 @@
 var _ = require('underscore');
 var cards = require('./cards.js');
+var maxPlayers = 8;
 
 var gameList = [];
 var usernamesTaken = [];
@@ -17,8 +18,27 @@ function removeFromArray(array, item) {
 	}	
 };
 
-function addUsername(username) {
-	usernamesTaken.push(username);
+function addUsername(username, userId) {
+	var existingUser = getUserOfId(userId);
+	//console.log(existingUser);
+	usernamesTaken.push({name: username, id: userId});
+	var games = getGamesUserIsIn(userId);
+	console.log("adding username " + username + " with id " + userId);
+	if(typeof existingUser !== 'undefined') {
+
+		existingUser.name = username;
+	        for(i=0; i<games.length; i++) {
+			//console.log("gamechanger " + games[i].id);
+			for(j=0; j<games[i].players.length; j++) {
+				//console.log(games[i].players[j].id + " " + userId);
+				if(games[i].players[j].id === userId) {
+					//console.log("namechanger " + games[i].id);
+					games[i].players[j].name = username;
+					break;
+				}
+			}
+		}
+        }
 	return username;
 }
 
@@ -28,12 +48,51 @@ function removeUsername(username) {
 }
 
 function checkIfNameTaken(username) {
-	return  usernamesTaken.indexOf(username) !== -1;
+	return  typeof _.find(usernamesTaken, function(x) { return x.name === username}) !== 'undefined'
+}
+
+function getUserOfId(userId) {
+	return _.find(usernamesTaken, function(x) { return x.id === userId});
+}
+
+function changeUserNameOfId(username, userId) {
+	var user = getUserOfId(userId);
+	user.name = username;
+
+	var games = getGamesUserIsIn(userId);
+	for(i=0; i<games.length; i++) {
+                //console.log("gamechanger " + games[i].id);
+                for(j=0; j<games[i].players.length; j++) {
+                        //console.log(games[i].players[j].id + " " + userId);
+                        if(games[i].players[j].id === userId) {
+                                //console.log("namechanger " + games[i].id);
+                                games[i].players[j].name = username;
+                                break;
+                        }
+                }
+        }
+
+
+
+}
+
+function getGamesUserIsIn(userId) {
+	var games = [];
+	for(i=0; i<gameList.length; i++) {
+		for(j=0; j<gameList[i].players.length; j++) {
+			if(gameList[i].players[j].id === userId) games.push(gameList[i]);
+		}
+	}
+	return games;
+}
+
+function getMaxPlayersPerGame() {
+	return maxPlayers;
 }
 
 function list() {
 	return toInfo(_.filter(gameList, function(x) {
-		return x.players.length < 4 && !x.isStarted;
+		return x.players.length < maxPlayers && !x.isStarted;
 	}));
 };
 
@@ -80,7 +139,21 @@ function getGame(gameId) {
 	return _.find(gameList, function(x) { return x.id === gameId }) || undefined;
 };
 
+function isPlayerPartOfGame(gameId, playerId) {
+	var game = getGame(gameId);
+	if(game) {
+		return typeof _.find(game.players, function(x) { return x.id === playerId}) !== 'undefined';
+	}
+	return false;
+}
+
 function joinGame(game, player) {
+	if(game.players.length >= maxPlayers) {
+		return 'full game';
+	}else if(isPlayerPartOfGame(game.id, player.id)) {
+		return 'already in game';
+	}
+	
 	if(typeof _.find(game.players, function(x) { return x.id === player.id}) === 'undefined') {
 		var joiningPlayer = {
 			id: player.id,
@@ -96,23 +169,14 @@ function joinGame(game, player) {
 			drawWhiteCard(game, joiningPlayer);
 		}
 		
-		game.players.push(joiningPlayer);	
+		game.players.push(joiningPlayer);
 
-		if(game.players.length === 4) {
-			if(!game.isStarted){
-				startGame(game);
-			} else {
-				//someone may have dropped and rejoined. If it was the Czar, we need to re-elect the re-joining player
-				var currentCzar = _.find(game.players, function(p) {
-				return p.isCzar == true;
-			});
-			
-				if(!currentCzar){
-					game.players[game.players.length - 1].isCzar = true;
-				}
-			}
-		}
+	
+	}else {
+		//TODO player is in the game already
+		//Might not need to have this else
 	}
+
 	
 	return game;
 };
@@ -131,7 +195,8 @@ function leaveGame(gameId, playerId) {
 	}
 };
 
-function startGame(game) {
+function startGame(gameId) {
+	var game = getGame(gameId);
 	game.isStarted = true;
 	setCurrentBlackCard(game);
 	game.players[0].isCzar = true;
@@ -155,12 +220,13 @@ function endRound(game) {
 		player.selectedWhiteCardId = null;
 
 	});
-
-	for(i=0; i<4; i++) {
+	
+	var playerAmount = game.players.length;
+	for(i=0; i<playerAmount; i++) {
 		if(game.players[i].isCzar === true) {
 			game.players[i].isCzar = false;
-			game.players[(i+1)%4].isCzar = true;
-			game.players[(i+1)%4].isReady = false;
+			game.players[(i+1)%playerAmount].isCzar = true;
+			game.players[(i+1)%playerAmount].isReady = false;
 			break;
 		}
 	}
@@ -171,7 +237,6 @@ function endRound(game) {
 		});
 		game.IsOver = false;
 	}
-
 }
 
 function drawWhiteCard(game, player) {
@@ -196,20 +261,6 @@ function getPlayerByCardId(gameId, cardId) {
 	return _.findWhere(game.players, { selectedWhiteCardId: cardId });
 }
 
-function readyForNextRound(gameId, playerId) {
-	var player = getPlayer(gameId, playerId);
-	player.isReady = true;
-	var game = getGame(gameId);
-	var allReady = _.every(game.players, function(x) {
-		return x.isReady;
-	});
-
-	if(allReady) {
-		endRound(game);
-	}
-}
-
-
 function selectCard(gameId, playerId, card) {
 	var player = getPlayer(gameId, playerId);
 	player.selectedWhiteCardId = card;
@@ -219,13 +270,9 @@ function selectCard(gameId, playerId, card) {
 		return x.selectedWhiteCardId;
 	});
 
-	if(readyPlayers.length === 3) {
+	if(readyPlayers.length === game.players.length-1) {
 		game.isReadyForScoring = true;
 	}
-}
-
-function delayEndRound(game) {
-	setTimeout(endRound(game), 10000);
 }
 
 function selectWinner(gameId, cardId) {
@@ -237,7 +284,7 @@ function selectWinner(gameId, cardId) {
 	game.history.push({ black: game.currentBlackCard, white: cardId, winner: player.name });
 //	delayEndRound(game);
 
-	if(player.awesomePoints === game.pointsToWin) {
+	if(player.points === game.pointsToWin) {
 		game = getGame(gameId);
 		game.isOver = true;
 		game.winnerId = player.id;
@@ -253,17 +300,22 @@ function reset(){
 exports.addUsername = addUsername;
 exports.removeUsername = removeUsername;
 exports.checkIfNameTaken = checkIfNameTaken;
+exports.getGamesUserIsIn = getGamesUserIsIn;
 exports.getDeck = getDeck;
 exports.removeFromArray = removeFromArray;
+exports.getMaxPlayersPerGame = getMaxPlayersPerGame;
 exports.list = list;
 exports.listAll = listAll;
 exports.addGame = addGame;
 exports.getGame = getGame;
+exports.isPlayerPartOfGame = isPlayerPartOfGame;
 exports.joinGame = joinGame;
 exports.leaveGame = leaveGame;
+exports.startGame = startGame;
 exports.getPlayer = getPlayer;
-exports.readyForNextRound = readyForNextRound;
+//exports.readyForNextRound = readyForNextRound;
 exports.reset = reset;
 exports.endRound = endRound;
 exports.selectCard = selectCard;
 exports.selectWinner = selectWinner;
+

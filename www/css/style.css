@@ -60,6 +60,19 @@
     outline: 0 none;
 }
 
+.fb-settings-toggle-item {
+	border: none;
+}
+
+.fb-settings-card {
+	background-color: rgba(0, 0, 0, 0.5) !important;
+	border-radius: 0;
+}
+
+.test {
+	background-color: rgba(0, 0, 0, 0) !important;
+}
+
 #welcome {
 	text-align: center;
 }
