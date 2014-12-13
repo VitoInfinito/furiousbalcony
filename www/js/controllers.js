@@ -185,9 +185,10 @@ angular.module('starter.controllers', [])
       $scope.game = game;
       console.info(game);
 
-      if(game.isReadyForReview) {
+      if(game.isReadyForReview && $scope.countDown <= 0) {
         $scope.selectedCard = null;
         $scope.sentCard = null;
+        countDownNextRound(10);
       }
     };
 
@@ -221,6 +222,14 @@ angular.module('starter.controllers', [])
         console.info("joinGame error")
         $scope.gameError = error.data.error;
       });
+    };
+
+    $scope.countDown = 0;
+    var countDownNextRound = function(timeLeft) {
+      $scope.countDown = timeLeft;
+      if(--$scope.countDown > 0) {
+        setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
+      }
     };
 
 
