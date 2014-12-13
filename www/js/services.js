@@ -6,21 +6,7 @@ angular.module('starter.services', [])
 
 .factory('Games', ['$http', 
   function($http) {
-    var alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var rl = function() {
-      return alphabet[Math.floor(Math.random() * (alphabet.length))];
-    }
-
-    var rlString = function(length) {
-      var rls = "";
-      for(var i=0; i<length; i++) {
-        rls = rls + rl();
-      }
-      return rls;
-    }
     
-    user.id = rlString(40);
-    console.log(user.id);
 
     //Save the games for future detailed references
     var games = [];
@@ -39,7 +25,7 @@ angular.module('starter.services', [])
         return games[gameId];
       },
       createGame: function() {
-        return $http.post(http + '/addGame', { name: user.name + "'s game" });
+        return $http.post(http + '/addGame', { name: user.name + "'s game", isOwner: user.id });
       }
     }
 }])
@@ -66,6 +52,9 @@ angular.module('starter.services', [])
       readyForNextRound: function(gameId, playerId) {
         return $http.post(http + "/readyForNextRound", {gameId: gameId, playerId: playerId});
       },
+      startGame: function(gameId) {
+        return $http.post(http + "/startGame", {gameId: gameId});
+      },
       getUserId: function() {
         return user.id;
       },
@@ -77,6 +66,25 @@ angular.module('starter.services', [])
 
 .factory('SettingsService', ['$http', 
   function($http) {
+
+    var alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var rl = function() {
+      return alphabet[Math.floor(Math.random() * (alphabet.length))];
+    }
+
+    var rlString = function(length) {
+      var rls = "";
+      for(var i=0; i<length; i++) {
+        rls = rls + rl();
+      }
+      return rls;
+    }
+
+    if(!user.id) {
+      user.id = rlString(40);
+    }
+    
+    console.log(user.id);
 
     return {
       setLocalName: function(name) {
@@ -93,7 +101,7 @@ angular.module('starter.services', [])
         })
       },
       checkAndSetName: function(name) {
-        return $http.get(http + '/checkName?name=' + name)
+        return $http.get(http + '/checkName?name=' + name + "&id=" + user.id)
       }
 
     }

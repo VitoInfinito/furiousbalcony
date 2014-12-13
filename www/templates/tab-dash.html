@@ -10,10 +10,8 @@
 			    <input ng-model="dash.checkname" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name">
 			</div>
 		</form>
-		<div class="fb-basic fb-button fb-name-button" ng-click="dash.checkUsername()">Check name</div>
-		<div id="dash-stat" class="statusfield error">{{dash.errormsg}}</div>
-
-
+		<div class="fb-basic fb-button fb-name-button" ng-click="dash.checkUsername()">Connect</div>
+		<div id="dash-stat" class="statusfield error">{{errormsg}}</div>
 
 	</div>
 	<div id="welcome" ng-show="dash.hasUsername">

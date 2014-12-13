@@ -1,5 +1,34 @@
 <ion-view title="Settings">
-  <ion-content class="padding">
-    <h1>Settings</h1>
+  <ion-content class="padding test">
+
+  	<ul class="list">
+
+	  <li class="item item-toggle fb-settings-toggle-item fb-settings-card">
+	     Night mode(Not implemented)
+	     <label class="toggle toggle-royal">
+	       <input type="checkbox">
+	       <div class="track">
+	         <div class="handle"></div>
+	       </div>
+	     </label>
+	  </li>
+
+	</ul>
+
+
+	<!--<div class="card fb-settings-card">-->
+	<h3>Change username</h3>
+    <form role="form">
+		<div>
+		    <input ng-model="dash.currentName" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name">
+		</div>
+	</form>
+	<div class="fb-basic fb-button fb-name-button" ng-click="dash.changeUsername()">Change name</div>
+
+	<div id="settings-stat" class="statusfield error">{{errormsg}}</div>
+	<!--</div>-->
+
+
+
   </ion-content>
 </ion-view>

@@ -3,22 +3,42 @@
 
 		<table id="playerViewTable">
 			<tr class="indicatorTr">
-		    	<td class="selectingCard" ng-repeat="player in game.players" ng-class="{isCzar: player.isCzar, selectedCard: player.selectedWhiteCardId !== null}">
+		    	<td class="selectingCard" ng-repeat="player in getFirstRowOfPlayers()" ng-class="{isCzar: player.isCzar, selectedCard: player.selectedWhiteCardId !== null}">
 				</td>
 			</tr>
 			<tr class="playerViewTr">
-		    	<td ng-repeat="player in game.players">
+		    	<td ng-repeat="player in getFirstRowOfPlayers()">
 				    {{player.name}}
 				</td>
 			</tr>
 			<tr class="playerViewTr">
-		    	<td ng-repeat="player in game.players">
+		    	<td ng-repeat="player in getFirstRowOfPlayers()">
+				    {{player.points}}
+				</td>
+			</tr>
+		</table>
+		<table id="playerViewTable" ng-show="isTwoRows()">
+			<tr class="indicatorTr">
+		    	<td class="selectingCard" ng-repeat="player in getLastRowOfPlayers()" ng-class="{isCzar: player.isCzar, selectedCard: player.selectedWhiteCardId !== null}">
+				</td>
+			</tr>
+			<tr class="playerViewTr">
+		    	<td ng-repeat="player in getLastRowOfPlayers()">
+				    {{player.name}}
+				</td>
+			</tr>
+			<tr class="playerViewTr">
+		    	<td ng-repeat="player in getLastRowOfPlayers()">
 				    {{player.points}}
 				</td>
 			</tr>
 		</table>
 
-		<div id="black-card" class="card" ng-hide="game.currentBlackCard === null">
+
+
+		<div class="fb-basic fb-button fb-name-button" ng-show="showStartGameButton()" ng-click="startGame()">Start game</div>
+
+		<div id="black-card" class="card" ng-show="game.currentBlackCard !== ''">
 			{{game.currentBlackCard}}
 		</div>
 
@@ -43,7 +63,11 @@
 		</div>
 
 		<div class="notification" ng-show="notificationNextRound()">
-			Next round will begin shortly
+			Next round will begin in {{countDown}} seconds
+		</div>
+
+		<div class="notification" ng-show="notificationWaitingOnPlayersToJoin()">
+			Waiting for more players to join
 		</div>
 
 
