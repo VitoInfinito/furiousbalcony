@@ -1,6 +1,7 @@
 var http = 'http://lethe.se:10600';
 var hasUsername = false;
 var socket;
+var nightmode = false;
 
 angular.module('starter.controllers', [])
 
@@ -8,10 +9,10 @@ angular.module('starter.controllers', [])
 
   var setStatusText = function(msg) {
     //TODO Toast (popup message that fades away)
-    document.getElementById("dash-stat").style.color = "red";
+    angular.element(document.getElementById("dash-stat")).css('color', 'red');
         $scope.errormsg = msg;
         setTimeout(function() {
-          document.getElementById("dash-stat").style.color = "black";
+          angular.element(document.getElementById("dash-stat")).css('color', 'black');
 
         }, 200);
   };
@@ -65,6 +66,17 @@ angular.module('starter.controllers', [])
     connected: false,
     hasUsername: false,
   };
+  
+  $scope.nightmode = function() { return nightmode };
+
+
+  $scope.settings = {
+    nightmodeChecked: false,
+    nightmodeChange: function() {
+        nightmode = $scope.settings.nightmodeChecked;
+        
+    } 
+  };
 
 
 
@@ -87,10 +99,10 @@ angular.module('starter.controllers', [])
 
   var setStatusText = function(msg) {
     //TODO Toast (popup message that fades away)
-    document.getElementById("settings-stat").style.color = "red";
+    angular.element(document.getElementById("settings-stat")).css('color', 'red');
         $scope.errormsg = msg;
         setTimeout(function() {
-          document.getElementById("settings-stat").style.color = "black";
+          angular.element(document.getElementById("settings-stat")).css('color', 'black');
 
         }, 200);
   };
@@ -105,22 +117,29 @@ angular.module('starter.controllers', [])
               setStatusText("Name " + name + " was taken.");
             }else {
               SettingsService.setLocalName(name);
+              setStatusText("Successfully changed username to " + $scope.settings.currentName);
             }
         });
   }
 
-  $scope.dash = {
+  $scope.nightmode = function() { return nightmode };
+
+  $scope.settings = {
+    nightmodeChecked: nightmode,
+    nightmodeChange: function() {
+        nightmode = $scope.settings.nightmodeChecked;
+        
+    },
     changeUsername: function() {
-      if(!$scope.dash.currentName) {
+      if(!$scope.settings.currentName) {
         setStatusText("Please enter a name");
-      }else if(!$scope.dash.connected) {
+      }else if(!$scope.settings.connected) {
         setStatusText("There is currently no connection to the server. Please try again later");
         //SettingsService.checkConnection(connectionCallback);
-      }else if($scope.dash.currentName === SettingsService.getName()) {
+      }else if($scope.settings.currentName === SettingsService.getName()) {
         setStatusText("That is already your username");
       }else {
-        sendNameToServer($scope.dash.currentName);
-        setStatusText("Successfully changed username to " + $scope.dash.currentName);
+        sendNameToServer($scope.settings.currentName);
       }
     },
     currentName : SettingsService.getName(),
@@ -145,8 +164,25 @@ angular.module('starter.controllers', [])
 		Games.fetchGames()
       .then(function(success) {
         var games = success.data;
-        console.info('getGames returned ' + games.length + ' items');
+        console.info('fetchGames returned ' + games.length + ' items');
         $scope.games = games;
+      });
+
+    Games.fetchUsersGames()
+      .then(function(success) {
+        var usersGames = success.data;
+        console.info('fetchUsersGames returned ' + usersGames.length + ' items');
+        $scope.usersGames = usersGames;
+        for(userGame in usersGames) {
+          console.info(userGame.id);
+          for(var i=0; i<$scope.games.size; i++) {
+            console.info($scope.games[i].id);
+            if($scope.games[i].id === userGame.id) {
+              console.info(i);
+            }
+          }
+          //$scope.games.splice($scope.games.indexOf(game),1);
+        }
       });
 	};
 
@@ -182,6 +218,7 @@ angular.module('starter.controllers', [])
           delete game.players[i].selectedWhiteCardId;
         }
       }
+
       $scope.game = game;
       console.info(game);
 
@@ -232,6 +269,7 @@ angular.module('starter.controllers', [])
       }
     };
 
+    $scope.nightmode = function() { return nightmode };
 
     /**Code for holding the selected and sent card for both player and czar**/
     $scope.chosenWhiteCards = [];

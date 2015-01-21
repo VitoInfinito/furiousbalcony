@@ -21,6 +21,9 @@ angular.module('starter.services', [])
       getGames: function() {
         return games;
       },
+      fetchUsersGames: function() {
+        return $http.get(http + '/listusersgames?id=' + user.id);
+      },
       get: function(gameId) {
         return games[gameId];
       },

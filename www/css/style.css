@@ -1,3 +1,17 @@
+.scroll-content {
+	background-color: white;
+}
+
+.scrollable-night {
+	background-color: #444;
+}
+
+
+
+.text-night {
+	color:#ccc;
+}
+
 .fb-navbar {
 	background-color: #F5CC45 !important;
 }
@@ -31,6 +45,16 @@
 	background-color:#ccc;
 }
 
+.fb-button-night {
+	background-color: #ccc;
+	color:#444;
+}
+
+.fb-button-night:hover {
+	background-color:#888;
+	color:#ccc;
+}
+
 .fb-name-button {
 	padding-top:0.2em;
 	height: 2em;
@@ -60,17 +84,24 @@
     outline: 0 none;
 }
 
+.input-night {
+	color:#ccc !important;
+	border-color: #000 !important;
+	background-color:#444;
+}
+
 .fb-settings-toggle-item {
 	border: none;
+}
+
+.fb-settings-toggle-item > .toggle input:checked + .track {
+    background-color: #8a6de9;
+    border-color: #8a6de9;
 }
 
 .fb-settings-card {
 	background-color: rgba(0, 0, 0, 0.5) !important;
 	border-radius: 0;
-}
-
-.test {
-	background-color: rgba(0, 0, 0, 0) !important;
 }
 
 #welcome {
@@ -140,10 +171,14 @@ tr.playerViewTr {
 	color:#444;
 }
 
-#black-card {
+.black-card {
 	background-color: #444;
 	color:#fff;
 	margin-top:1em;
+}
+
+.black-card-night {
+	background-color:#000;
 }
 
 .clickedCard {

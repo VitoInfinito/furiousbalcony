@@ -1,17 +1,33 @@
 <ion-view title="Games">
-	<ion-content>
+	<ion-content ng-class="{'scrollable-night': nightmode()}">
 		<ion-nav-buttons side="right">
 			<button class="button icon ion-plus" ng-click="createGame()"></button>
 	    </ion-nav-buttons>
-	  	<div id="gameListHead">
+
+		<div class="isCzar">Games you are in</div>
+		<div id="gameListHead" ng-class="{'text-night': nightmode()}">
+	  		<div class="gameListItem">Name</div>
+			<div class="gameListItem"><div class="text-float-right">Players</div></div>
+		</div>
+		<ion-list>
+	    	<ion-item ng-class="{'text-night': nightmode()}" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+		        <div>
+			        <div class="gameListItem">{{game.name}}</div>
+			        <div class="gameListItem"><div class="text-float-right">{{game.players.size}}</div></div>
+		    	</div>
+	    	</ion-item>
+	    </ion-list>
+
+	    <div class="isCzar">Games you can join</div>
+	    <div id="gameListHead" ng-class="{'text-night': nightmode()}">
 	  		<div class="gameListItem">Name</div>
 			<div class="gameListItem"><div class="text-float-right">Players</div></div>
 		</div>
 	    <ion-list>
-	    	<ion-item ng-repeat="game in games" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+	    	<ion-item ng-class="{'text-night': nightmode()}" ng-repeat="game in games" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
-			        <div class="gameListItem"><div class="text-float-right">{{game.players}}/4</div></div>
+			        <div class="gameListItem"><div class="text-float-right">{{game.players}}/?</div></div>
 		    	</div>
 	    	</ion-item>
 	    </ion-list>

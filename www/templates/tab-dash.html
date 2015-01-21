@@ -1,17 +1,21 @@
 <ion-view title="Home">
-  <ion-content class="padding">
+  <ion-content class="padding" ng-class="{'scrollable-night': nightmode()}">
   	<ion-nav-buttons side="right">
   		<i ng-show="dash.connected" class="button-icon icon ion-ios7-infinite-outline"></i>
     </ion-nav-buttons>
     <div ng-hide="dash.hasUsername">
-	    <h3>Please enter a username</h3>
+	    <h3 ng-class="{'text-night': nightmode()}">Please enter a username</h3>
 	    <form role="form">
 			<div>
-			    <input ng-model="dash.checkname" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name">
+			    <input ng-model="dash.checkname" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name" ng-class="{'input-night': nightmode()}">
 			</div>
 		</form>
-		<div class="fb-basic fb-button fb-name-button" ng-click="dash.checkUsername()">Connect</div>
+		<div class="fb-basic fb-button fb-name-button" ng-class="{'fb-button-night': nightmode()}" ng-click="dash.checkUsername()">Connect</div>
 		<div id="dash-stat" class="statusfield error">{{errormsg}}</div>
+
+
+	
+
 
 	</div>
 	<div id="welcome" ng-show="dash.hasUsername">
