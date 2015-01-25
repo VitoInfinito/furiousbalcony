@@ -1,5 +1,7 @@
 .scroll-content {
 	background-color: white;
+	background: linear-gradient(#000 30%, #B20047 60%, #ef4e3a 99%) repeat scroll 0% 0% transparent;
+	color: #fff;
 }
 
 .scrollable-night {
@@ -13,7 +15,12 @@
 }
 
 .fb-navbar {
-	background-color: #F5CC45 !important;
+	background-color:#000 !important;
+	border-bottom: none;
+}
+
+.fb-tabs {
+	background-color: red !important;
 }
 
 .statusfield {
@@ -108,16 +115,26 @@
 	text-align: center;
 }
 
-#gameListHead {
+.gameListHead {
 	font-size:1.2em;
 	margin-top:1.2em;
-	margin-left:1em;
+	padding-left:1em;
 	height:2em;
 }
 
 .gameListItem {
 	width:50%;
 	float:left;
+}
+
+.test {
+	width:40%;
+	float:left;
+}
+
+.game-menu-toggle-item {
+	padding: 1em;
+	height:3em;
 }
 
 table,td,tr {

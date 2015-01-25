@@ -4,22 +4,26 @@
 			<button class="button icon ion-plus" ng-click="createGame()"></button>
 	    </ion-nav-buttons>
 
-		<div class="isCzar">Games you are in</div>
-		<div id="gameListHead" ng-class="{'text-night': nightmode()}">
-	  		<div class="gameListItem">Name</div>
-			<div class="gameListItem"><div class="text-float-right">Players</div></div>
+
+		<div class="isCzar game-menu-toggle-item">
+			<!--<div class="test">Games you are in</div>
+			<span class="ion-close-circled text-float-right"></span>-->
+		
+			<div class="gameListItem">Name</div>
+			<div class="gameListItem"><div class="text-float-right ion-close-circled"></div></div>
 		</div>
-		<ion-list>
+		
+		<div class="list">
 	    	<ion-item ng-class="{'text-night': nightmode()}" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
 			        <div class="gameListItem"><div class="text-float-right">{{game.players.size}}</div></div>
 		    	</div>
 	    	</ion-item>
-	    </ion-list>
+	    </div>
 
-	    <div class="isCzar">Games you can join</div>
-	    <div id="gameListHead" ng-class="{'text-night': nightmode()}">
+	    <div class="isCzar add-padding">Games you can join</div>
+	    <div class="gameListHead" ng-class="{'text-night': nightmode()}">
 	  		<div class="gameListItem">Name</div>
 			<div class="gameListItem"><div class="text-float-right">Players</div></div>
 		</div>
