@@ -9,7 +9,7 @@
 			<!--<div class="test">Games you are in</div>
 			<span class="ion-close-circled text-float-right"></span>-->
 		
-			<div class="gameListItem">Name</div>
+			<div class="gameListItem">Games you are in</div>
 			<div class="gameListItem"><div class="text-float-right ion-close-circled"></div></div>
 		</div>
 		
@@ -28,7 +28,7 @@
 			<div class="gameListItem"><div class="text-float-right">Players</div></div>
 		</div>
 	    <ion-list>
-	    	<ion-item ng-class="{'text-night': nightmode()}" ng-repeat="game in games" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+	    	<ion-item ng-class="{'text-night': nightmode()}" ng-repeat="game in availableGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
 			        <div class="gameListItem"><div class="text-float-right">{{game.players}}/?</div></div>

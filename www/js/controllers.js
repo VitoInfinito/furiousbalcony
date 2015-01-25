@@ -173,16 +173,13 @@ angular.module('starter.controllers', [])
         var usersGames = success.data;
         console.info('fetchUsersGames returned ' + usersGames.length + ' items');
         $scope.usersGames = usersGames;
-        for(userGame in usersGames) {
-          console.info(userGame.id);
-          for(var i=0; i<$scope.games.size; i++) {
-            console.info($scope.games[i].id);
-            if($scope.games[i].id === userGame.id) {
-              console.info(i);
-            }
-          }
-          //$scope.games.splice($scope.games.indexOf(game),1);
-        }
+      });
+
+    Games.fetchAvailableGames()
+      .then(function(success) {
+        var availableGames = success.data;
+        console.info('fetchAvailableGames returned ' + availableGames.length + ' items');
+        $scope.availableGames = availableGames;
       });
 	};
 
