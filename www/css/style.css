@@ -1,11 +1,15 @@
 .scroll-content {
 	background-color: white;
-	background: linear-gradient(#000 30%, #B20047 60%, #ef4e3a 99%) repeat scroll 0% 0% transparent;
+	background: linear-gradient(#000 20%, #555 80%, #444 100%) repeat scroll 0% 0% transparent;
 	color: #fff;
 }
 
 .scrollable-night {
 	background-color: #444;
+}
+
+div,p,h1,h2,h3,h4,h5 {
+	color: #fff;
 }
 
 
