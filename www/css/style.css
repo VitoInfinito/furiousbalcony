@@ -119,6 +119,16 @@ div,p,h1,h2,h3,h4,h5 {
 	text-align: center;
 }
 
+.item {
+	border-left: none;
+	border-right: none;
+	background-color: transparent
+}
+
+.item .item-content {
+	background-color: transparent;
+}
+
 .gameListHead {
 	font-size:1.2em;
 	margin-top:1.2em;
@@ -137,8 +147,9 @@ div,p,h1,h2,h3,h4,h5 {
 }
 
 .game-menu-toggle-item {
+	background-color: rgba(255, 255, 255, 0.15);
 	padding: 1em;
-	height:3em;
+	height:3.5em;
 }
 
 table,td,tr {

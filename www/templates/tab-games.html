@@ -1,28 +1,32 @@
 <ion-view title="Games">
-	<ion-content ng-class="{'scrollable-night': nightmode()}">
+	<ion-content padding="true" ng-class="{'scrollable-night': nightmode()}">
 		<ion-nav-buttons side="right">
 			<button class="button icon ion-plus" ng-click="createGame()"></button>
 	    </ion-nav-buttons>
 
 
-		<div class="isCzar game-menu-toggle-item">
+		<div class="game-menu-toggle-item">
 			<!--<div class="test">Games you are in</div>
 			<span class="ion-close-circled text-float-right"></span>-->
 		
 			<div class="gameListItem">Games you are in</div>
-			<div class="gameListItem"><div class="text-float-right ion-close-circled"></div></div>
+			<div class="gameListItem"><div class="text-float-right ion-chevron-down"></div></div>
 		</div>
 		
-		<div class="list">
-	    	<ion-item ng-class="{'text-night': nightmode()}" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
-		        <div>
-			        <div class="gameListItem">{{game.name}}</div>
-			        <div class="gameListItem"><div class="text-float-right">{{game.players.size}}</div></div>
+		<div class="list fb-listitem">
+	    	<ion-item class="fb-listitem" ng-class="{'text-night': nightmode()}" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+		        <div class="fb-listitem">
+			        <div class="gameListItem fb-listitem">{{game.name}}</div>
+			        <div class="gameListItem fb-listitem"><div class="text-float-right">{{game.players.size}}</div></div>
 		    	</div>
 	    	</ion-item>
 	    </div>
 
-	    <div class="isCzar add-padding">Games you can join</div>
+	    
+	    <div class="game-menu-toggle-item">
+			<div class="gameListItem">Games you can join</div>
+			<div class="gameListItem"><div class="text-float-right ion-chevron-down"></div></div>
+		</div>
 	    <div class="gameListHead" ng-class="{'text-night': nightmode()}">
 	  		<div class="gameListItem">Name</div>
 			<div class="gameListItem"><div class="text-float-right">Players</div></div>

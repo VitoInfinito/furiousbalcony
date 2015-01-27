@@ -14,8 +14,20 @@ angular.module('starter.controllers', [])
         setTimeout(function() {
           angular.element(document.getElementById("dash-stat")).css('color', 'black');
 
-        }, 200);
+        }, 1000);
   };
+
+  var initSocket = function() {
+      socket = io.connect(http + '/');
+
+      socket.removeListener('gameAdded');
+      
+      socket.on('gameError', function(errorMsg) {
+        $scope.$apply(function() {
+          $scope.gameError = errorMsg;
+        });
+      });
+    };
 
   var checkAndSetName = function(name) {
     SettingsService.checkAndSetName(name)
@@ -33,17 +45,7 @@ angular.module('starter.controllers', [])
             });
   };
 
-  var initSocket = function() {
-      socket = io.connect(http + '/');
-
-      socket.removeListener('gameAdded');
-      
-      socket.on('gameError', function(errorMsg) {
-        $scope.$apply(function() {
-          $scope.gameError = errorMsg;
-        });
-      });
-    };
+  
 
   var connectionCallback = function(connected) {
     if(connected) {
@@ -151,11 +153,26 @@ angular.module('starter.controllers', [])
 
 .controller('GamesCtrl', function($scope, $location, Games) {
 
+  var sortAvailableGamesList = function(gameList) {
+    if($scope.availableGames) {
+          for(var i=0; i<$scope.usersGames.length; i++) {
+            for(var j=0; j<gameList.length; j++) {
+              if($scope.usersGames[i].id === gameList[j].id){
+                gameList.splice(j, 1);
+                break;
+              } 
+            }
+          }
+        }
+
+        $scope.availableGames = gameList;
+  }
+
   var initGameListSocket = function() {
     socket.on('gameAdded', function(gameList) {
       console.info('gameAdded');
       $scope.$apply(function() {
-        $scope.games = gameList;
+        sortAvailableGamesList(gameList);
       });
     });
   };
@@ -175,6 +192,7 @@ angular.module('starter.controllers', [])
         $scope.usersGames = usersGames;
       });
 
+    //Do this the first time to make sure we get the exact list
     Games.fetchAvailableGames()
       .then(function(success) {
         var availableGames = success.data;
