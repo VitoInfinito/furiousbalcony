@@ -141,9 +141,8 @@ div,p,h1,h2,h3,h4,h5 {
 	float:left;
 }
 
-.test {
-	width:40%;
-	float:left;
+.list-container {
+	transition: height 1s transform 1s;
 }
 
 .game-menu-toggle-item {
@@ -225,4 +224,37 @@ tr.playerViewTr {
 	position:absolute;
 	right:0;
 	margin-right:2em;
+}
+
+
+/* when hiding the thing */
+.ion-chevron-down.ng-hide-add, .ion-chevron-up.ng-hide-add { 
+  -webkit-animation:0.5s escapeRight ease; 
+  animation:0.5s escapeRight ease; 
+}
+
+/* light speed out */
+@-webkit-keyframes escapeRight {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translate3d(100%, 0, 0) skewX(30deg);
+    transform: translate3d(100%, 0, 0) skewX(30deg);
+    opacity: 0;
+  }
+}
+
+@keyframes escapeRight {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translate3d(100%, 0, 0) skewX(30deg);
+    -ms-transform: translate3d(100%, 0, 0) skewX(30deg);
+    transform: translate3d(100%, 0, 0) skewX(30deg);
+    opacity: 0;
+  }
 }

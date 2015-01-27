@@ -5,19 +5,19 @@
 	    </ion-nav-buttons>
 
 
-		<div class="game-menu-toggle-item">
-			<!--<div class="test">Games you are in</div>
-			<span class="ion-close-circled text-float-right"></span>-->
-		
+		<div class="game-menu-toggle-item" ng-click="gameList.user = !gameList.user">
 			<div class="gameListItem">Games you are in</div>
-			<div class="gameListItem"><div class="text-float-right ion-chevron-down"></div></div>
+			<div class="gameListItem">
+				<div ng-hide="gameList.user" class="text-float-right ion-chevron-up"></div>
+				<div ng-show="gameList.user" class="text-float-right ion-chevron-down"></div>
+			</div>
 		</div>
 		
-		<div class="list fb-listitem">
-	    	<ion-item class="fb-listitem" ng-class="{'text-night': nightmode()}" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+		<div class="list list-container" ng-show="gameList.user">
+	    	<ion-item class="fb-listitem" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div class="fb-listitem">
-			        <div class="gameListItem fb-listitem">{{game.name}}</div>
-			        <div class="gameListItem fb-listitem"><div class="text-float-right">{{game.players.size}}</div></div>
+			        <div class="gameListItem">{{game.name}}</div>
+			        <div class="gameListItem"><div class="text-float-right">{{game.players.size}}</div></div>
 		    	</div>
 	    	</ion-item>
 	    </div>

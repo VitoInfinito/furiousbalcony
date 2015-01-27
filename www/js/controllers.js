@@ -209,6 +209,14 @@ angular.module('starter.controllers', [])
       });
   }
 
+  $scope.gameList = {
+    user: true,
+    rest: true
+  }
+
+
+
+
 
 	$scope.reload();
   initGameListSocket();
