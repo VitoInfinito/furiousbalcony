@@ -1,0 +1,59 @@
+/*---------Animations--------*/
+
+/*---------Leave and Enter animations----------*/
+.ion-chevron-down.ng-hide-add, .ion-chevron-up.ng-hide-add { 
+  -webkit-animation:0.5s leaveRight ease; 
+  animation:0.5s leaveRight ease; 
+}
+
+.welcome-dash.ng-hide-add {
+  -webkit-animation:0.5s transitionOut ease; 
+  animation:0.5s transitionOut ease; 
+}
+
+
+
+@-webkit-keyframes leaveRight {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateX(100%);
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes leaveRight {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateX(100%);
+    -ms-transform: translateX(100%);
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@-webkit-keyframes transitionOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes transitionOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}

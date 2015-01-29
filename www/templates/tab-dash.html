@@ -3,8 +3,8 @@
   	<ion-nav-buttons side="right">
   		<i ng-show="dash.connected" class="button-icon icon ion-ios7-infinite-outline"></i>
     </ion-nav-buttons>
-    <div ng-hide="dash.hasUsername">
-	    <h3 ng-class="{'text-night': nightmode()}">Please enter a username</h3>
+    <div class="welcome-dash" ng-hide="dash.hasUsername">
+	    <h3>Please enter a username</h3>
 	    <form role="form">
 			<div>
 			    <input ng-model="dash.checkname" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name" ng-class="{'input-night': nightmode()}">
@@ -12,13 +12,8 @@
 		</form>
 		<div class="fb-basic fb-button fb-name-button" ng-class="{'fb-button-night': nightmode()}" ng-click="dash.checkUsername()">Connect</div>
 		<div id="dash-stat" class="statusfield error">{{errormsg}}</div>
-
-
-	
-
-
 	</div>
-	<div id="welcome" ng-show="dash.hasUsername">
+	<div class="welcome-dash" id="welcome" ng-show="dash.hasUsername">
 	    <h3>Welcome {{dash.checkname}}</h3>
 	    <p>Use the menu to find games or settings</p>
 	    <p>This project was developed by unknown</p>

@@ -25,8 +25,9 @@ function addUsername(username, userId) {
 	var games = getGamesUserIsIn(userId);
 	console.log("adding username " + username + " with id " + userId);
 	if(typeof existingUser !== 'undefined') {
-
-		existingUser.name = username;
+		
+		removeUsername(existingUser);
+		//existingUser.name = username;
 	        for(i=0; i<games.length; i++) {
 			//console.log("gamechanger " + games[i].id);
 			for(j=0; j<games[i].players.length; j++) {
@@ -38,12 +39,14 @@ function addUsername(username, userId) {
 				}
 			}
 		}
-        }
+        }else {
+		usernamesTaken.push({name: username, id: userId});
+	}
 	return username;
 }
 
-function removeUsername(username) {
-	removeFromArray(usernamesTaken, username);
+function removeUsername(user) {
+	removeFromArray(usernamesTaken, user);
 	return username;
 }
 
@@ -84,6 +87,23 @@ function getGamesUserIsIn(userId) {
 		}
 	}
 	return games;
+}
+
+function getAvailableGamesForUser(userId) {
+	var games = [];
+	var addToList = true;
+        for(i=0; i<gameList.length; i++) {
+		addToList = true;
+                for(j=0; j<gameList[i].players.length; j++) {
+                        if(gameList[i].players[j].id === userId) addToList = false;
+                }
+		if(addToList) games.push(gameList[i]);
+        }
+ //       return games;
+	return toInfo(_.filter(games, function(x) {
+                return x.players.length < maxPlayers && !x.isStarted;
+        }));
+
 }
 
 function getMaxPlayersPerGame() {
@@ -301,6 +321,7 @@ exports.addUsername = addUsername;
 exports.removeUsername = removeUsername;
 exports.checkIfNameTaken = checkIfNameTaken;
 exports.getGamesUserIsIn = getGamesUserIsIn;
+exports.getAvailableGamesForUser = getAvailableGamesForUser;
 exports.getDeck = getDeck;
 exports.removeFromArray = removeFromArray;
 exports.getMaxPlayersPerGame = getMaxPlayersPerGame;

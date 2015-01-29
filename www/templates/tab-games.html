@@ -14,6 +14,10 @@
 		</div>
 		
 		<div class="list list-container" ng-show="gameList.user">
+			<div class="gameListHead">
+		  		<div class="gameListItem">Name</div>
+				<div class="gameListItem"><div class="text-float-right">Players</div></div>
+			</div>
 	    	<ion-item class="fb-listitem" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div class="fb-listitem">
 			        <div class="gameListItem">{{game.name}}</div>
@@ -23,21 +27,25 @@
 	    </div>
 
 	    
-	    <div class="game-menu-toggle-item">
+	    <div class="game-menu-toggle-item" ng-click="gameList.rest = !gameList.rest">
 			<div class="gameListItem">Games you can join</div>
-			<div class="gameListItem"><div class="text-float-right ion-chevron-down"></div></div>
+			<div class="gameListItem">
+				<div ng-hide="gameList.rest" class="text-float-right ion-chevron-up"></div>
+				<div ng-show="gameList.rest" class="text-float-right ion-chevron-down"></div>
+			</div>
 		</div>
-	    <div class="gameListHead" ng-class="{'text-night': nightmode()}">
-	  		<div class="gameListItem">Name</div>
-			<div class="gameListItem"><div class="text-float-right">Players</div></div>
-		</div>
-	    <ion-list>
-	    	<ion-item ng-class="{'text-night': nightmode()}" ng-repeat="game in availableGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+
+		<div class="list list-container" ng-show="gameList.rest">
+		    <div class="gameListHead">
+		  		<div class="gameListItem">Name</div>
+				<div class="gameListItem"><div class="text-float-right">Players</div></div>
+			</div>
+	    	<ion-item ng-repeat="game in availableGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
-			        <div class="gameListItem"><div class="text-float-right">{{game.players}}/?</div></div>
+			        <div class="gameListItem"><div class="text-float-right">{{game.players}}/8</div></div>
 		    	</div>
 	    	</ion-item>
-	    </ion-list>
+		</div>
 	</ion-content>
 </ion-view>

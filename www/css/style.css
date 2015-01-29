@@ -225,36 +225,3 @@ tr.playerViewTr {
 	right:0;
 	margin-right:2em;
 }
-
-
-/* when hiding the thing */
-.ion-chevron-down.ng-hide-add, .ion-chevron-up.ng-hide-add { 
-  -webkit-animation:0.5s escapeRight ease; 
-  animation:0.5s escapeRight ease; 
-}
-
-/* light speed out */
-@-webkit-keyframes escapeRight {
-  0% {
-    opacity: 1;
-  }
-
-  100% {
-    -webkit-transform: translate3d(100%, 0, 0) skewX(30deg);
-    transform: translate3d(100%, 0, 0) skewX(30deg);
-    opacity: 0;
-  }
-}
-
-@keyframes escapeRight {
-  0% {
-    opacity: 1;
-  }
-
-  100% {
-    -webkit-transform: translate3d(100%, 0, 0) skewX(30deg);
-    -ms-transform: translate3d(100%, 0, 0) skewX(30deg);
-    transform: translate3d(100%, 0, 0) skewX(30deg);
-    opacity: 0;
-  }
-}

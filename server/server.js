@@ -107,7 +107,9 @@ io.sockets.on('connection', function(socket) {
 	});
 });
 		
-app.get('/list', function(req, res) { ;res.json(Game.list()); });
+app.get('/list', function(req, res) { res.json(Game.list()); });
+app.get('/listusersgames', function(req, res) { res.json(Game.getGamesUserIsIn(req.query.id)); });
+app.get('/listavailablegames', function(req, res) { res.json(Game.getAvailableGamesForUser(req.query.id)); });
 app.get('/checkConnection', function(req, res) { res.send("ok")});
 app.get('/checkName', function(req, res) {	
 	if(!Game.checkIfNameTaken(req.query.name)) {
@@ -118,8 +120,13 @@ app.get('/checkName', function(req, res) {
 		}
 		res.send('free');
 	}else {
-		res.send("taken")
+		res.send('taken');
 	}
+});
+
+app.get('/getuserofid', function(req, res) {
+	res.send(Game.getUserOfId(req.query.id));
+
 });
 
 app.post('/addGame', function(req, res) {
