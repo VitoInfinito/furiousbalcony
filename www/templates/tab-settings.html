@@ -1,17 +1,12 @@
 <ion-view title="Settings">
   <ion-content class="padding" ng-class="{'scrollable-night': nightmode()}">
 
-  	<ion-toggle class="fb-settings-toggle-item fb-settings-card" ng-model="settings.nightmodeChecked"
-                    ng-change="settings.nightmodeChange()">
-          Night mode(Not fully implemented)
-        </ion-toggle>
-
 
 	<!--<div class="card fb-settings-card">-->
-	<h3 ng-class="{'text-night': nightmode()}">Change username</h3>
+	<h3>Change username</h3>
     <form role="form">
 		<div>
-		    <input ng-model="settings.currentName" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name" ng-class="{'input-night': nightmode()}">
+		    <input ng-model="settings.currentName" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name">
 		</div>
 	</form>
 	<div class="fb-basic fb-button fb-name-button" ng-class="{'fb-button-night': nightmode()}" ng-click="settings.changeUsername()">Change name</div>

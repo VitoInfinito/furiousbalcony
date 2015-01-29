@@ -116,13 +116,19 @@ div,p,h1,h2,h3,h4,h5 {
 }
 
 #welcome {
+	
+}
+
+.welcome-dash {
 	text-align: center;
+	position:relative;
+	width:100%;
 }
 
 .item {
 	border-left: none;
 	border-right: none;
-	background-color: transparent
+	background-color: transparent;
 }
 
 .item .item-content {

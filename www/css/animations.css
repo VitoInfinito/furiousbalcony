@@ -1,17 +1,26 @@
-/*---------Animations--------*/
-
-/*---------Leave and Enter animations----------*/
+/*---------Class declarations----------*/
 .ion-chevron-down.ng-hide-add, .ion-chevron-up.ng-hide-add { 
   -webkit-animation:0.5s leaveRight ease; 
   animation:0.5s leaveRight ease; 
 }
 
 .welcome-dash.ng-hide-add {
-  -webkit-animation:0.5s transitionOut ease; 
-  animation:0.5s transitionOut ease; 
+  -webkit-animation:0.48s transitionOut linear; 
+  animation:0.48s transitionOut linear; 
+}
+
+.welcome-dash.ng-hide-remove {
+  -webkit-animation:1s delayedTransitionIn linear; 
+  animation:1s delayedTransitionIn linear; 
+}
+
+.fb-tabs-container.ng-hide-remove {
+  -webkit-animation:1s delayedTransitionIn linear; 
+  animation:1s delayedTransitionIn linear; 
 }
 
 
+/*---------Animations--------*/
 
 @-webkit-keyframes leaveRight {
   0% {
@@ -38,6 +47,104 @@
   }
 }
 
+@-webkit-keyframes enterLeft {
+  0% {
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes enterLeft {
+  0% {
+    -webkit-transform: translateX(-100%);
+    -ms-transform: translateX(-100%);
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes leaveBottom {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateY(50%);
+    transform: translateY(50%);
+    opacity: 0;
+  }
+}
+
+@keyframes leaveBottom {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateY(50%);
+    -ms-transform: translateY(50%);
+    transform: translateY(50%);
+    opacity: 0;
+  }
+}
+
+@-webkit-keyframes transitionIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes transitionIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes delayedTransitionIn {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes delayedTransitionIn {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 @-webkit-keyframes transitionOut {
   0% {
     opacity: 1;
@@ -50,6 +157,34 @@
 
 @keyframes transitionOut {
   0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@-webkit-keyframes delayedTransitionOut {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes delayedTransitionOut {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
     opacity: 1;
   }
 

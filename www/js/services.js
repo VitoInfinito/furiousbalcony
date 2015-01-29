@@ -86,18 +86,15 @@ angular.module('starter.services', [])
       return rls;
     }
 
-    if(!user.id) {
-      user.id = rlString(40);
-    }
-    
-    console.log(user.id);
-
     return {
       setLocalName: function(name) {
         user.name = name;
       },
       getName: function() {
         return user.name;
+      },
+      getId: function() {
+        return user.id;
       },
       checkConnection: function(callback) {
         $http.get(http + '/checkConnection').success(function(data) {
@@ -108,20 +105,16 @@ angular.module('starter.services', [])
       },
       checkAndSetName: function(name) {
         return $http.get(http + '/checkName?name=' + name + "&id=" + user.id)
+      },
+      setupNewUserId: function(){
+        user.id = rlString(40);
+      },
+      setupUserId: function(id) {
+        user.id = id;
+      },
+      getUserOfId: function(id) {
+        return $http.get(http + '/getuserofid?id=' + id);
       }
 
     }
-}])
-
-.factory('User', function() {
-  var user = { id: 0, name: 'Testname' };
-
-
-
-  return {
-    get: function() {
-      // Simple index lookup
-      return user;
-    }
-  }
-});
+}]);

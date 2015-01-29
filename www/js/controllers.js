@@ -2,6 +2,7 @@ var http = 'http://lethe.se:10600';
 var hasUsername = false;
 var socket;
 var nightmode = false;
+var storingCapability = false;
 
 angular.module('starter.controllers', [])
 
@@ -12,9 +13,9 @@ angular.module('starter.controllers', [])
     angular.element(document.getElementById("dash-stat")).css('color', 'red');
         $scope.errormsg = msg;
         setTimeout(function() {
-          angular.element(document.getElementById("dash-stat")).css('color', 'black');
+          angular.element(document.getElementById("dash-stat")).css('color', 'transparent');
 
-        }, 1000);
+        }, 1500);
   };
 
   var initSocket = function() {
@@ -29,29 +30,59 @@ angular.module('starter.controllers', [])
       });
     };
 
+  var setNameLocally = function(name) {
+    SettingsService.setLocalName(name);
+    $scope.dash.hasUsername = true;
+    hasUsername = true;
+    //Makes other tabs visible
+    $rootScope.hasUsername = true;
+    $scope.dash.checkname = name;
+    document.getElementById("fb-tabs-container").className =
+      document.getElementById("fb-tabs-container").className.replace(/\btabs-item-hide\b/,'');
+  };
+
   var checkAndSetName = function(name) {
     SettingsService.checkAndSetName(name)
           .then(function(success) {
               if(success.data === "taken") {
                 setStatusText("Name " + name + " was taken.");
               }else {
-                SettingsService.setLocalName(name);
-                $scope.dash.hasUsername = true;
-                hasUsername = true;
-                //Makes other tabs visible
-                $rootScope.hasUsername = true;
+                setNameLocally(name);
+                localStorage.userId = SettingsService.getId();
                 initSocket();
               }
             });
   };
+
+
 
   
 
   var connectionCallback = function(connected) {
     if(connected) {
       $scope.dash.connected = true;
+      //checkStoredId();
     }
   };
+
+  var checkStoredId = function() {
+    if(storingCapability) {
+    if(localStorage.userId) {
+      SettingsService.getUserOfId(localStorage.userId)
+        .then(function(success) {
+            if(success.data !== 'noexist') {
+              SettingsService.setupUserId(success.data.id);
+              setNameLocally(success.data.name);
+              initSocket();
+            }else {
+              SettingsService.setupNewUserId();
+            }
+        });
+    }else {
+      SettingsService.setupNewUserId();
+    }
+  }
+  }
 
   $scope.errormsg =  "";
   $scope.dash = {
@@ -94,6 +125,17 @@ angular.module('starter.controllers', [])
       });*/
   SettingsService.checkConnection(connectionCallback);
 
+  /*Checking and setting up possible id setup*/
+  if(typeof(Storage) !== "undefined") {
+    storingCapability = true;
+  } else {
+      setStatusText("Will not be able to save user information over time");
+      SettingsService.setupNewUserId();
+  }
+
+  checkStoredId();
+
+
 
 })
 
@@ -104,9 +146,9 @@ angular.module('starter.controllers', [])
     angular.element(document.getElementById("settings-stat")).css('color', 'red');
         $scope.errormsg = msg;
         setTimeout(function() {
-          angular.element(document.getElementById("settings-stat")).css('color', 'black');
+          angular.element(document.getElementById("settings-stat")).css('color', 'transparent');
 
-        }, 200);
+        }, 1500);
   };
 
   socket.removeListener('gameAdded');
