@@ -32,6 +32,9 @@ angular.module('starter.services', [])
       },
       createGame: function() {
         return $http.post(http + '/addGame', { name: user.name + "'s game", isOwner: user.id });
+      },
+      leaveGame: function(gameId) {
+        return $http.post(http + "/leavegame", {gameId: gameId, playerId: user.id});
       }
     }
 }])

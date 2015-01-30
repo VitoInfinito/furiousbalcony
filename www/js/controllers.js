@@ -61,27 +61,37 @@ angular.module('starter.controllers', [])
   var connectionCallback = function(connected) {
     if(connected) {
       $scope.dash.connected = true;
-      //checkStoredId();
+      checkStoredId();
+    }else {
+      setTimeout(function() {SettingsService.checkConnection(connectionCallback); }, 10000);
     }
   };
 
   var checkStoredId = function() {
     if(storingCapability) {
-    if(localStorage.userId) {
-      SettingsService.getUserOfId(localStorage.userId)
-        .then(function(success) {
-            if(success.data !== 'noexist') {
-              SettingsService.setupUserId(success.data.id);
-              setNameLocally(success.data.name);
-              initSocket();
-            }else {
-              SettingsService.setupNewUserId();
-            }
-        });
-    }else {
-      SettingsService.setupNewUserId();
+      if($scope.dash.connected) {
+        if(localStorage.userId) {
+          SettingsService.getUserOfId(localStorage.userId)
+            .then(function(success) {
+                if(success.data !== 'noexist') {
+                  SettingsService.setupUserId(success.data.id);
+                  setNameLocally(success.data.name);
+                  initSocket();
+                }else {
+                  SettingsService.setupNewUserId();
+                }
+            },
+            function(error) {
+              $scope.dash.connected = false;
+              SettingsService.checkConnection(connectionCallback);
+            });
+        }else {
+          SettingsService.setupNewUserId();
+        }
+      }else {
+        SettingsService.checkConnection(connectionCallback);
+      }
     }
-  }
   }
 
   $scope.errormsg =  "";
@@ -129,11 +139,11 @@ angular.module('starter.controllers', [])
   if(typeof(Storage) !== "undefined") {
     storingCapability = true;
   } else {
-      setStatusText("Will not be able to save user information over time");
+      setStatusText("Will not be able to save user information upon closing");
       SettingsService.setupNewUserId();
   }
 
-  checkStoredId();
+  //checkStoredId();
 
 
 
@@ -248,6 +258,21 @@ angular.module('starter.controllers', [])
       .then(function(success) {
         console.info('Game successfully created');
         $location.url("/tab/game/" + success.data.id);
+      });
+  }
+
+  $scope.leaveGame = function(gameId) {
+    Games.leaveGame(gameId)
+      .then(function(success) {
+        $scope.usersGames = success.data;
+
+        //Fetching available games to make the available games list complete.
+        Games.fetchAvailableGames()
+          .then(function(success) {
+            var availableGames = success.data;
+            console.info('fetchAvailableGames returned ' + availableGames.length + ' items');
+            $scope.availableGames = availableGames;
+          });
       });
   }
 

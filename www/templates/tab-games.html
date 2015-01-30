@@ -20,7 +20,7 @@
 	    	<ion-item class="fb-listitem" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
-			        <div class="gameListItem"><div class="text-float-right">{{game.players.size}}</div></div>
+			        <div class="gameListItem"><div class="text-float-right ion-close" ng-click="$event.preventDefault();leaveGame(game.id)"></div></div>
 		    	</div>
 	    	</ion-item>
 	    </div>
