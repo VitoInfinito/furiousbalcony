@@ -21,13 +21,13 @@ function removeFromArray(array, item) {
 function addUsername(username, userId) {
 	var existingUser = getUserOfId(userId);
 	//console.log(existingUser);
-	usernamesTaken.push({name: username, id: userId});
+	//usernamesTaken.push({name: username, id: userId});
 	var games = getGamesUserIsIn(userId);
 	console.log("adding username " + username + " with id " + userId);
 	if(typeof existingUser !== 'undefined') {
 		
-		removeUsername(existingUser);
-		//existingUser.name = username;
+		//removeUser(existingUser);
+		existingUser.name = username;
 	        for(i=0; i<games.length; i++) {
 			//console.log("gamechanger " + games[i].id);
 			for(j=0; j<games[i].players.length; j++) {
@@ -45,9 +45,9 @@ function addUsername(username, userId) {
 	return username;
 }
 
-function removeUsername(user) {
+function removeUser(user) {
 	removeFromArray(usernamesTaken, user);
-	return username;
+	return user.name;
 }
 
 function checkIfNameTaken(username) {
@@ -86,7 +86,7 @@ function getGamesUserIsIn(userId) {
 			if(gameList[i].players[j].id === userId) games.push(gameList[i]);
 		}
 	}
-	return games;
+	return toInfo(games);
 }
 
 function getAvailableGamesForUser(userId) {
@@ -211,6 +211,8 @@ function leaveGame(gameId, playerId) {
 		removeFromArray(game.players, leavingPlayer);
 		if(game.players.length === 0) {
 			removeFromArray(gameList, game);
+		}else if(game.players.length === 2) {
+			game.isStarted = false;
 		}
 	}
 };
@@ -318,7 +320,8 @@ function reset(){
 
 
 exports.addUsername = addUsername;
-exports.removeUsername = removeUsername;
+exports.removeUser = removeUser;
+exports.getUserOfId = getUserOfId;
 exports.checkIfNameTaken = checkIfNameTaken;
 exports.getGamesUserIsIn = getGamesUserIsIn;
 exports.getAvailableGamesForUser = getAvailableGamesForUser;

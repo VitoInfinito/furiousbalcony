@@ -35,10 +35,13 @@ function broadcastGame(gameId) {
 function gameViewModel(gameId) {
 	var game = Game.getGame(gameId);
 	var viewModel = null;
+//	console.log(game);
 	if(game) {
 		viewModel = JSON.parse(JSON.stringify(game));
 		delete viewModel.deck;
 	}
+//	console.log(viewModel);
+//	console.log(gameId);
 	return viewModel;
 }
 
@@ -55,6 +58,7 @@ io.sockets.on('connection', function(socket) {
 	socket.on('connectToGame', function(data) {
 		var game = Game.getGame(data.gameId);
 		if(game) {
+			//Currently optimized for one game per user
 			if(socket.gameId != game.id) {
 				console.log('User connecting to game with id ' + data.gameId);
 				//socket.leave('lobbyRoom');
@@ -125,8 +129,12 @@ app.get('/checkName', function(req, res) {
 });
 
 app.get('/getuserofid', function(req, res) {
-	res.send(Game.getUserOfId(req.query.id));
-
+	var user = Game.getUserOfId(req.query.id);
+	if(user) {
+		res.send(user);
+	}else {
+		res.send('noexist');
+	}
 });
 
 app.post('/addGame', function(req, res) {
@@ -159,14 +167,16 @@ app.post('/joingame', function(req, res) {
 	returnGame(req.body.gameId, res);
 	//lobbySocket.emit('gameAdded', Game.list());
 	io.to('lobbyRoom').emit('gameAdded', Game.list());
-	broadcastGame(req.body.gameId);
+	//broadcastGame(req.body.gameId);
 });
 
 app.post('/leavegame', function(req, res) {
+//	console.log("User with id " + req.body.playerId + " is leaving game with id " + req.body.gameId);
 	Game.leaveGame(req.body.gameId, req.body.playerId);
 	//lobbySocket.emit('gameAdded', Game.list());
 	io.to('lobbyRoom').emit('gameAdded', Game.list());
 	broadcastGame(req.body.gameId);
+	res.json(Game.getGamesUserIsIn(req.body.playerId));
 });
 
 app.post('/selectCard', function(req, res) {
