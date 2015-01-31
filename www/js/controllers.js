@@ -359,7 +359,7 @@ angular.module('starter.controllers', [])
       }
     };
 
-    $scope.nightmode = function() { return nightmode };
+    $scope.expansions = [];
 
     /**Code for holding the selected and sent card for both player and czar**/
     $scope.chosenWhiteCards = [];
@@ -390,7 +390,13 @@ angular.module('starter.controllers', [])
     };
 
     $scope.startGame = function() {
-      Game.startGame($stateParams.gameId)
+      var expList = [];
+      for(x in $scope.expansions) {
+        if($scope.expansions[x].chosen === true)
+          expList.push($scope.expansions[x].name);
+      }
+
+      Game.startGame($stateParams.gameId, expList)
         .then(function(success) {
           update(success.data);
         });
@@ -468,9 +474,21 @@ angular.module('starter.controllers', [])
     $scope.showStartGameButton = function() {
       return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id;
     };
+
+    $scope.showExpansionsChoice = function() {
+      return $scope.game && !$scope.game.isStarted && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id;
+    };
     
 
     joinGame();
+
+    Game.fetchExpansions()
+        .then(function(success) {
+          $scope.expansions = [];
+          for(x in success.data) {
+            $scope.expansions.push({chosen: success.data[x] === "Base", name: success.data[x]});
+          }
+        });
 
 /*    $scope.$on('$destroy', function(event) {
       console.info('leaving GameCtrl');

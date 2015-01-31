@@ -112,6 +112,7 @@ io.sockets.on('connection', function(socket) {
 });
 		
 app.get('/list', function(req, res) { res.json(Game.list()); });
+app.get('/listExpansions', function(req, res) { res.json(Game.getExpansions()); });
 app.get('/listusersgames', function(req, res) { res.json(Game.getGamesUserIsIn(req.query.id)); });
 app.get('/listavailablegames', function(req, res) { res.json(Game.getAvailableGamesForUser(req.query.id)); });
 app.get('/checkConnection', function(req, res) { res.send("ok")});
@@ -199,7 +200,7 @@ app.post('/ready', function(req, res) {
 });
 
 app.post('/startGame', function(req, res) {
-	Game.startGame(req.body.gameId);
+	Game.startGame(req.body.gameId, req.body.expList);
 	broadcastGame(req.body.gameId);
 	returnGame(req.body.gameId, res);
 });

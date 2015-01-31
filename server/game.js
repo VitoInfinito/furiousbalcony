@@ -7,9 +7,17 @@ var usernamesTaken = [];
 
 var tempIdCounter = 0;
 
-function getDeck() {
-	return cards.getDeck();
+function getDeck(expList) {
+	if(expList.length > 0) {
+		return cards.getDeck(expList);
+	}else {
+		return cards.getDeck(["Base"]);
+	}
 };
+
+function getExpansions() {
+	return cards.expansions();
+}
 
 function removeFromArray(array, item) {
 	var index = array.indexOf(item);
@@ -138,7 +146,7 @@ function getRandomId() {
 function addGame(game) {
 	game.players = [];
 	game.isStarted = false;
-	game.deck = getDeck();
+	//game.deck = getDeck();
 	game.currentBlackCard = "";
 	game.pointsToWin = 5;
 	game.history = [];
@@ -185,16 +193,13 @@ function joinGame(game, player) {
 			isCzar: false
 		};
 
-		for(var i=0; i<7; i++) {
+	/*	for(var i=0; i<7; i++) {
 			drawWhiteCard(game, joiningPlayer);
 		}
-		
+	*/	
 		game.players.push(joiningPlayer);
 
 	
-	}else {
-		//TODO player is in the game already
-		//Might not need to have this else
 	}
 
 	
@@ -217,8 +222,15 @@ function leaveGame(gameId, playerId) {
 	}
 };
 
-function startGame(gameId) {
+function startGame(gameId, expList) {
 	var game = getGame(gameId);
+	game.deck = getDeck(expList);
+	for(var i=0; i<game.players.length; i++) {
+		for(var j=0; j<7; j++) {
+                        drawWhiteCard(game, game.players[i]);
+                }
+        
+	}
 	game.isStarted = true;
 	setCurrentBlackCard(game);
 	game.players[0].isCzar = true;
@@ -319,6 +331,7 @@ function reset(){
 
 
 
+exports.getExpansions = getExpansions;
 exports.addUsername = addUsername;
 exports.removeUser = removeUser;
 exports.getUserOfId = getUserOfId;

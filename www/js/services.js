@@ -46,6 +46,9 @@ angular.module('starter.services', [])
       fetchGame: function(gameId) {
         return $http.get(http + '/getgamebyid?id=' + gameId);
       },
+      fetchExpansions: function() {
+        return $http.get(http + '/listExpansions');
+      },
       joinGame: function(gameId, playerId, playerName) {
         return $http.post(http + "/joingame", { gameId: gameId, playerId: playerId, playerName: playerName });
       },
@@ -61,8 +64,8 @@ angular.module('starter.services', [])
       readyForNextRound: function(gameId, playerId) {
         return $http.post(http + "/readyForNextRound", {gameId: gameId, playerId: playerId});
       },
-      startGame: function(gameId) {
-        return $http.post(http + "/startGame", {gameId: gameId});
+      startGame: function(gameId, expList) {
+        return $http.post(http + "/startGame", {gameId: gameId, expList: expList});
       },
       getUserId: function() {
         return user.id;

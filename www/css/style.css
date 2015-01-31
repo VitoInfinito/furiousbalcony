@@ -203,6 +203,29 @@ tr.playerViewTr {
 	color:#444;
 }
 
+.half-card-container {
+	position:inherit;
+	width:100%;
+	position:relative;
+	min-height:2em;
+	margin-top:0.5em;
+	margin-bottom:0.5em;
+}
+
+.half-card {
+	width:50%;
+	color:#444;
+	float:left;
+}
+
+.half-card-right {
+	border-radius: 0 0.2em 0.2em 0;
+}
+
+.half-card-left {
+	border-radius: 0.2em 0 0 0.2em;
+}
+
 .notification {
 	background-color:#FFCC00;
 	color:#444;
