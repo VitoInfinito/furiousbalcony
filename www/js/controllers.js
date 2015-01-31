@@ -94,6 +94,15 @@ angular.module('starter.controllers', [])
     }
   }
 
+  $scope.playerAmount = 5;
+  var playerAmountChangeTimeout;
+
+  $scope.$watch('playerAmount', function() {
+    //clearTimeout(playerAmountChangeTimeout);
+    //playerAmountChangeTimeout = setTimeout(function() { console.log($scope.playerAmount); }, 1000);
+    console.log($scope.playerAmount);
+  });
+
   $scope.errormsg =  "";
   $scope.dash = {
     checkUsername: function() {
