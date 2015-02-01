@@ -12,6 +12,18 @@ div,p,h1,h2,h3,h4,h5 {
 	color: #fff;
 }
 
+div.center {
+	text-align: center;
+}
+
+a {
+	color: #ddd;
+}
+
+a:visited {
+	color: #666;
+}
+
 
 
 .text-night {
@@ -115,14 +127,17 @@ div,p,h1,h2,h3,h4,h5 {
 	border-radius: 0;
 }
 
-#welcome {
-	
-}
-
 .welcome-dash {
 	text-align: center;
 	position:relative;
 	width:100%;
+}
+
+#welcome-dash-container {
+	position: relative;
+	height:12em;
+	width:100%;
+	overflow: hidden;
 }
 
 .item {

@@ -1,5 +1,10 @@
 <ion-view title="{{game.name}}">
-	<ion-content has-header="true" padding="true" ng-class="{'scrollable-night': nightmode()}">
+	<ion-content has-header="true" padding="true">
+
+
+
+
+
 
 		<table id="playerViewTable">
 			<tr class="indicatorTr">
@@ -8,7 +13,9 @@
 			</tr>
 			<tr class="playerViewTr">
 		    	<td ng-repeat="player in getFirstRowOfPlayers()">
-				    {{player.name}}
+				    <i ng-show="canKick(player.id)" class="ion-close" ng-click="$event.preventDefault();kickPlayer(player.id)"></i> {{player.name}}
+
+				   <!-- <div class="text-float-right ion-close" ng-click="$event.preventDefault();leaveGame(game.id)"></div>-->
 				</td>
 			</tr>
 			<tr class="playerViewTr">
@@ -24,7 +31,7 @@
 			</tr>
 			<tr class="playerViewTr">
 		    	<td ng-repeat="player in getLastRowOfPlayers()">
-				    {{player.name}}
+				    <i ng-show="canKick(player.id)" class="ion-close" ng-click="$event.preventDefault();kickPlayer(player.id)"></i> {{player.name}}
 				</td>
 			</tr>
 			<tr class="playerViewTr">
@@ -36,9 +43,9 @@
 
 
 
-		<div class="fb-basic fb-button fb-name-button" ng-show="showStartGameButton()" ng-click="startGame()">Start game</div>
+		<div class="fb-basic fb-button fb-name-button" ng-show="showStartGameButton()" ng-click="startGame()"><span ng-show="notificationGameIsOver()">Re</span>Start game</div>
 
-		<div class="card black-card" ng-show="game.currentBlackCard !== ''" ng-class="{'black-card-night': nightmode()}">
+		<div class="card black-card" ng-show="game.currentBlackCard !== '' && game.isStarted" ng-class="{'black-card-night': nightmode()}">
 			{{game.currentBlackCard}}
 		</div>
 
@@ -70,12 +77,18 @@
 			Waiting for more players to join
 		</div>
 
-
-		<div class="range">
-		  3
-		  <input type="range" name="playerAmount">
-		  8
+		<div class="notification" ng-show="notificationGameIsOver()">
+			Game is over and player {{game.winnerId}} won
 		</div>
+
+		
+
+
+		<!--To be implemented
+		<div class="range">
+		  <input type="range" name="playerAmount" ng-model="playerAmount">
+		  {{playerAmount}}
+		</div>-->
 
 
 		<div class="notification" ng-show="showExpansionsChoice()">
@@ -101,13 +114,13 @@
 		</div>
 
 		<div id="card-container" ng-show="showCzarCardBox()">
-			<div class="card" ng-repeat="card in chosenWhiteCards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
+			<div class="card" ng-repeat="card in game.chosenWhiteCards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
 				{{card}}
 			</div>
 		</div>
 
 		<div id="card-container" ng-show="showReviewCardBox()">
-			<div class="card" ng-repeat="card in chosenWhiteCards" ng-class="{selectedCard: card === game.winningCardId}">
+			<div class="card" ng-repeat="card in game.chosenWhiteCards" ng-class="{selectedCard: card === game.winningCardId}">
 				{{card}}
 			</div>
 		</div>

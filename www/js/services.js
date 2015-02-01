@@ -52,7 +52,7 @@ angular.module('starter.services', [])
       joinGame: function(gameId, playerId, playerName) {
         return $http.post(http + "/joingame", { gameId: gameId, playerId: playerId, playerName: playerName });
       },
-      leaveGame: function(gameId, playerId) {
+      kickPlayer: function(gameId, playerId) {
         return $http.post(http + "/leavegame", {gameId: gameId, playerId: playerId});
       },
       selectCard: function(gameId, playerId, card) {
