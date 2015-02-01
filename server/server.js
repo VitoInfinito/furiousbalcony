@@ -35,13 +35,10 @@ function broadcastGame(gameId) {
 function gameViewModel(gameId) {
 	var game = Game.getGame(gameId);
 	var viewModel = null;
-//	console.log(game);
 	if(game) {
 		viewModel = JSON.parse(JSON.stringify(game));
 		delete viewModel.deck;
 	}
-//	console.log(viewModel);
-//	console.log(gameId);
 	return viewModel;
 }
 
@@ -87,6 +84,12 @@ io.sockets.on('connection', function(socket) {
 		socket.userId = data.userId;
 		socket.userName = data.userName;
 	});
+
+	socket.on('kickPlayer', function(data) {
+		console.log("Kicking Player with id " + data.playerId + " in the game with id " + data.gameId);
+		Game.leaveGame(data.gameId, data.playerId);
+		io.to(data.gameId).emit('kickPlayer', { kickedPlayer : data.playerId, game: gameViewModel(data.gameId) });
+	});	
 
 	socket.on('disconnect', function() {
 		socketCount -= 1;
@@ -187,9 +190,9 @@ app.post('/selectCard', function(req, res) {
 });
 
 app.post('/selectWinningCard', function(req, res) {
-	Game.selectWinner(req.body.gameId, req.body.card);
+	var continueGame = Game.selectWinner(req.body.gameId, req.body.card);
 	broadcastGame(req.body.gameId);
-	delayEndRound(req.body.gameId);
+	if(continueGame) delayEndRound(req.body.gameId);
 	returnGame(req.body.gameId, res);
 });
 
