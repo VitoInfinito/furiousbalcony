@@ -1,5 +1,42 @@
+.scroll-content {
+	background-color: white;
+	background: linear-gradient(#000 20%, #555 80%, #444 100%) repeat scroll 0% 0% transparent;
+	color: #fff;
+}
+
+.scrollable-night {
+	background-color: #444;
+}
+
+div,p,h1,h2,h3,h4,h5 {
+	color: #fff;
+}
+
+div.center {
+	text-align: center;
+}
+
+a {
+	color: #ddd;
+}
+
+a:visited {
+	color: #666;
+}
+
+
+
+.text-night {
+	color:#ccc;
+}
+
 .fb-navbar {
-	background-color: #F5CC45 !important;
+	background-color:#000 !important;
+	border-bottom: none;
+}
+
+.fb-tabs {
+	background-color: red !important;
 }
 
 .statusfield {
@@ -31,6 +68,16 @@
 	background-color:#ccc;
 }
 
+.fb-button-night {
+	background-color: #ccc;
+	color:#444;
+}
+
+.fb-button-night:hover {
+	background-color:#888;
+	color:#ccc;
+}
+
 .fb-name-button {
 	padding-top:0.2em;
 	height: 2em;
@@ -60,8 +107,19 @@
     outline: 0 none;
 }
 
+.input-night {
+	color:#ccc !important;
+	border-color: #000 !important;
+	background-color:#444;
+}
+
 .fb-settings-toggle-item {
 	border: none;
+}
+
+.fb-settings-toggle-item > .toggle input:checked + .track {
+    background-color: #8a6de9;
+    border-color: #8a6de9;
 }
 
 .fb-settings-card {
@@ -69,24 +127,49 @@
 	border-radius: 0;
 }
 
-.test {
-	background-color: rgba(0, 0, 0, 0) !important;
-}
-
-#welcome {
+.welcome-dash {
 	text-align: center;
+	position:relative;
+	width:100%;
 }
 
-#gameListHead {
+#welcome-dash-container {
+	position: relative;
+	height:12em;
+	width:100%;
+	overflow: hidden;
+}
+
+.item {
+	border-left: none;
+	border-right: none;
+	background-color: transparent;
+}
+
+.item .item-content {
+	background-color: transparent;
+}
+
+.gameListHead {
 	font-size:1.2em;
 	margin-top:1.2em;
-	margin-left:1em;
+	padding-left:1em;
 	height:2em;
 }
 
 .gameListItem {
 	width:50%;
 	float:left;
+}
+
+.list-container {
+	transition: height 1s transform 1s;
+}
+
+.game-menu-toggle-item {
+	background-color: rgba(255, 255, 255, 0.15);
+	padding: 1em;
+	height:3.5em;
 }
 
 table,td,tr {
@@ -135,15 +218,42 @@ tr.playerViewTr {
 	color:#444;
 }
 
+.half-card-container {
+	position:inherit;
+	width:100%;
+	position:relative;
+	min-height:2em;
+	margin-top:0.5em;
+	margin-bottom:0.5em;
+}
+
+.half-card {
+	width:50%;
+	color:#444;
+	float:left;
+}
+
+.half-card-right {
+	border-radius: 0 0.2em 0.2em 0;
+}
+
+.half-card-left {
+	border-radius: 0.2em 0 0 0.2em;
+}
+
 .notification {
 	background-color:#FFCC00;
 	color:#444;
 }
 
-#black-card {
+.black-card {
 	background-color: #444;
 	color:#fff;
 	margin-top:1em;
+}
+
+.black-card-night {
+	background-color:#000;
 }
 
 .clickedCard {

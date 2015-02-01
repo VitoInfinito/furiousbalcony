@@ -3,20 +3,21 @@
   Each tab's child <ion-nav-view> directive will have its own 
   navigation history that also transitions its views in and out.
 -->
-<ion-tabs class="tabs-icon-top tabs-striped tabs-color-dark">
+<ion-tabs id="fb-tabs-container" class="tabs-striped tabs-background-dark tabs-color-light tabs-item-hide">
+
+  
+  <!-- Games Tab -->
+  <ion-tab title="Games" icon="icon ion-game-controller-a" href="#/tab/games">
+    <ion-nav-view name="tab-games"></ion-nav-view>
+  </ion-tab>
 
   <!-- Dashboard Tab -->
   <ion-tab title="Home" icon="icon ion-home" href="#/tab/dash">
     <ion-nav-view name="tab-dash"></ion-nav-view>
   </ion-tab>
 
-  <!-- Games Tab -->
-  <ion-tab title="Games" ng-if="hasUsername" icon="icon ion-game-controller-a" href="#/tab/games">
-    <ion-nav-view name="tab-games"></ion-nav-view>
-  </ion-tab>
-
   <!-- Account Tab -->
-  <ion-tab title="Settings" ng-if="hasUsername" icon="icon ion-gear-b" href="#/tab/settings">
+  <ion-tab title="Settings" icon="icon ion-gear-b" href="#/tab/settings">
     <ion-nav-view name="tab-settings"></ion-nav-view>
   </ion-tab>
 

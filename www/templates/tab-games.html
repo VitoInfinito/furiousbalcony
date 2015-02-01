@@ -1,19 +1,50 @@
 <ion-view title="Games">
-	<ion-content>
+	<ion-content padding="true" ng-class="{'scrollable-night': nightmode()}">
 		<ion-nav-buttons side="right">
 			<button class="button icon ion-plus" ng-click="createGame()"></button>
 	    </ion-nav-buttons>
-	  	<div id="gameListHead">
-	  		<div class="gameListItem">Name</div>
-			<div class="gameListItem"><div class="text-float-right">Players</div></div>
+
+
+		<div class="game-menu-toggle-item" ng-click="gameList.user = !gameList.user">
+			<div class="gameListItem">Games you are in</div>
+			<div class="gameListItem">
+				<div ng-hide="gameList.user" class="text-float-right ion-chevron-up"></div>
+				<div ng-show="gameList.user" class="text-float-right ion-chevron-down"></div>
+			</div>
 		</div>
-	    <ion-list>
-	    	<ion-item ng-repeat="game in games" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+		
+		<div class="list list-container" ng-show="gameList.user">
+			<div class="gameListHead">
+		  		<div class="gameListItem">Name</div>
+			</div>
+	    	<ion-item class="fb-listitem" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
-			        <div class="gameListItem"><div class="text-float-right">{{game.players}}/4</div></div>
+			        <div class="gameListItem"><div class="text-float-right ion-close" ng-click="$event.preventDefault();leaveGame(game.id)"></div></div>
 		    	</div>
 	    	</ion-item>
-	    </ion-list>
+	    </div>
+
+	    
+	    <div class="game-menu-toggle-item" ng-click="gameList.rest = !gameList.rest">
+			<div class="gameListItem">Games you can join</div>
+			<div class="gameListItem">
+				<div ng-hide="gameList.rest" class="text-float-right ion-chevron-up"></div>
+				<div ng-show="gameList.rest" class="text-float-right ion-chevron-down"></div>
+			</div>
+		</div>
+
+		<div class="list list-container" ng-show="gameList.rest">
+		    <div class="gameListHead">
+		  		<div class="gameListItem">Name</div>
+				<div class="gameListItem"><div class="text-float-right">Players</div></div>
+			</div>
+	    	<ion-item ng-repeat="game in availableGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+		        <div>
+			        <div class="gameListItem">{{game.name}}</div>
+			        <div class="gameListItem"><div class="text-float-right">{{game.players}}/8</div></div>
+		    	</div>
+	    	</ion-item>
+		</div>
 	</ion-content>
 </ion-view>

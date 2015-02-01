@@ -55,6 +55,7 @@ io.sockets.on('connection', function(socket) {
 	socket.on('connectToGame', function(data) {
 		var game = Game.getGame(data.gameId);
 		if(game) {
+			//Currently optimized for one game per user
 			if(socket.gameId != game.id) {
 				console.log('User connecting to game with id ' + data.gameId);
 				//socket.leave('lobbyRoom');
@@ -84,6 +85,12 @@ io.sockets.on('connection', function(socket) {
 		socket.userName = data.userName;
 	});
 
+	socket.on('kickPlayer', function(data) {
+		console.log("Kicking Player with id " + data.playerId + " in the game with id " + data.gameId);
+		Game.leaveGame(data.gameId, data.playerId);
+		io.to(data.gameId).emit('kickPlayer', { kickedPlayer : data.playerId, game: gameViewModel(data.gameId) });
+	});	
+
 	socket.on('disconnect', function() {
 		socketCount -= 1;
 		console.log('User disconnect, socketcount: ' + socketCount);
@@ -107,7 +114,10 @@ io.sockets.on('connection', function(socket) {
 	});
 });
 		
-app.get('/list', function(req, res) { ;res.json(Game.list()); });
+app.get('/list', function(req, res) { res.json(Game.list()); });
+app.get('/listExpansions', function(req, res) { res.json(Game.getExpansions()); });
+app.get('/listusersgames', function(req, res) { res.json(Game.getGamesUserIsIn(req.query.id)); });
+app.get('/listavailablegames', function(req, res) { res.json(Game.getAvailableGamesForUser(req.query.id)); });
 app.get('/checkConnection', function(req, res) { res.send("ok")});
 app.get('/checkName', function(req, res) {	
 	if(!Game.checkIfNameTaken(req.query.name)) {
@@ -118,7 +128,16 @@ app.get('/checkName', function(req, res) {
 		}
 		res.send('free');
 	}else {
-		res.send("taken")
+		res.send('taken');
+	}
+});
+
+app.get('/getuserofid', function(req, res) {
+	var user = Game.getUserOfId(req.query.id);
+	if(user) {
+		res.send(user);
+	}else {
+		res.send('noexist');
 	}
 });
 
@@ -152,14 +171,16 @@ app.post('/joingame', function(req, res) {
 	returnGame(req.body.gameId, res);
 	//lobbySocket.emit('gameAdded', Game.list());
 	io.to('lobbyRoom').emit('gameAdded', Game.list());
-	broadcastGame(req.body.gameId);
+	//broadcastGame(req.body.gameId);
 });
 
 app.post('/leavegame', function(req, res) {
+//	console.log("User with id " + req.body.playerId + " is leaving game with id " + req.body.gameId);
 	Game.leaveGame(req.body.gameId, req.body.playerId);
 	//lobbySocket.emit('gameAdded', Game.list());
 	io.to('lobbyRoom').emit('gameAdded', Game.list());
 	broadcastGame(req.body.gameId);
+	res.json(Game.getGamesUserIsIn(req.body.playerId));
 });
 
 app.post('/selectCard', function(req, res) {
@@ -169,9 +190,9 @@ app.post('/selectCard', function(req, res) {
 });
 
 app.post('/selectWinningCard', function(req, res) {
-	Game.selectWinner(req.body.gameId, req.body.card);
+	var continueGame = Game.selectWinner(req.body.gameId, req.body.card);
 	broadcastGame(req.body.gameId);
-	delayEndRound(req.body.gameId);
+	if(continueGame) delayEndRound(req.body.gameId);
 	returnGame(req.body.gameId, res);
 });
 
@@ -182,7 +203,7 @@ app.post('/ready', function(req, res) {
 });
 
 app.post('/startGame', function(req, res) {
-	Game.startGame(req.body.gameId);
+	Game.startGame(req.body.gameId, req.body.expList);
 	broadcastGame(req.body.gameId);
 	returnGame(req.body.gameId, res);
 });

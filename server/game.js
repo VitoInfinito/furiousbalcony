@@ -7,8 +7,16 @@ var usernamesTaken = [];
 
 var tempIdCounter = 0;
 
-function getDeck() {
-	return cards.getDeck();
+function getDeck(expList) {
+	if(expList.length > 0) {
+		return cards.getDeck(expList);
+	}else {
+		return cards.getDeck(["Base"]);
+	}
+};
+
+function getExpansions() {
+	return cards.expansions();
 };
 
 function removeFromArray(array, item) {
@@ -18,14 +26,33 @@ function removeFromArray(array, item) {
 	}	
 };
 
+function shuffle(array) {
+	var m = array.length, t, i;
+
+	// While there remain elements to shuffle…
+	while (m) {
+
+		// Pick a remaining element…
+		i = Math.floor(Math.random() * m--);
+
+		// And swap it with the current element.
+		t = array[m];
+		array[m] = array[i];
+		array[i] = t;
+	}
+
+	return array;
+}
+
 function addUsername(username, userId) {
 	var existingUser = getUserOfId(userId);
 	//console.log(existingUser);
-	usernamesTaken.push({name: username, id: userId});
+	//usernamesTaken.push({name: username, id: userId});
 	var games = getGamesUserIsIn(userId);
 	console.log("adding username " + username + " with id " + userId);
 	if(typeof existingUser !== 'undefined') {
-
+		
+		//removeUser(existingUser);
 		existingUser.name = username;
 	        for(i=0; i<games.length; i++) {
 			//console.log("gamechanger " + games[i].id);
@@ -38,13 +65,15 @@ function addUsername(username, userId) {
 				}
 			}
 		}
-        }
+        }else {
+		usernamesTaken.push({name: username, id: userId});
+	}
 	return username;
 }
 
-function removeUsername(username) {
-	removeFromArray(usernamesTaken, username);
-	return username;
+function removeUser(user) {
+	removeFromArray(usernamesTaken, user);
+	return user.name;
 }
 
 function checkIfNameTaken(username) {
@@ -83,7 +112,24 @@ function getGamesUserIsIn(userId) {
 			if(gameList[i].players[j].id === userId) games.push(gameList[i]);
 		}
 	}
-	return games;
+	return toInfo(games);
+}
+
+function getAvailableGamesForUser(userId) {
+	var games = [];
+	var addToList = true;
+        for(i=0; i<gameList.length; i++) {
+		addToList = true;
+                for(j=0; j<gameList[i].players.length; j++) {
+                        if(gameList[i].players[j].id === userId) addToList = false;
+                }
+		if(addToList) games.push(gameList[i]);
+        }
+ //       return games;
+	return toInfo(_.filter(games, function(x) {
+                return x.players.length < maxPlayers && !x.isStarted;
+        }));
+
 }
 
 function getMaxPlayersPerGame() {
@@ -117,14 +163,16 @@ function getRandomId() {
 
 function addGame(game) {
 	game.players = [];
+	game.playerAmount = 8;
 	game.isStarted = false;
-	game.deck = getDeck();
+	//game.deck = getDeck();
 	game.currentBlackCard = "";
-	game.pointsToWin = 5;
+	game.pointsToWin = 10;
 	game.history = [];
 	game.isOver = false;
 	game.winningCardId = null;
 	game.winnerId = null;
+	game.chosenWhiteCards = [];
 	game.isReadyForScoring = false;
 	game.isReadyForReview = false;
 //	game.id = tempIdCounter;
@@ -165,16 +213,13 @@ function joinGame(game, player) {
 			isCzar: false
 		};
 
-		for(var i=0; i<7; i++) {
+	/*	for(var i=0; i<7; i++) {
 			drawWhiteCard(game, joiningPlayer);
 		}
-		
+	*/	
 		game.players.push(joiningPlayer);
 
 	
-	}else {
-		//TODO player is in the game already
-		//Might not need to have this else
 	}
 
 	
@@ -191,22 +236,62 @@ function leaveGame(gameId, playerId) {
 		removeFromArray(game.players, leavingPlayer);
 		if(game.players.length === 0) {
 			removeFromArray(gameList, game);
+		}else if(game.players.length === 2) {
+			resetGame(gameId);
+		}
+
+		if(game.isOwner === playerId && game.players.length > 0) {
+			game.isOwner = game.players[0].id;
 		}
 	}
 };
 
-function startGame(gameId) {
+function resetGame(gameId) {
+        var game = getGame(gameId);
+        if(game) {
+                game.isStarted = false;
+                game.chosenWhiteCards = [];
+		game.isOver = false;
+                game.winnerId = null;
+		game.history = [];
+		game.currentBlackCard = "";
+		game.isReadyForScoring = false;
+		game.isReadyForReview = false;
+                for(x in game.players) {
+                        game.players[x].selectedWhiteCardId = null;
+			game.players[x].isCzar = false;
+			game.players[x].isReady = false;
+			game.players[x].points = 0;
+                }
+        }
+
+};
+
+function startGame(gameId, expList) {
 	var game = getGame(gameId);
-	game.isStarted = true;
-	setCurrentBlackCard(game);
-	game.players[0].isCzar = true;
-}
+	if(game) {
+		if(game.winnerId) {
+			resetGame(gameId);
+		}
+		game.deck = getDeck(expList);
+		for(var i=0; i<game.players.length; i++) {
+			game.players[i].cards = [];
+			for(var j=0; j<7; j++) {
+	                        drawWhiteCard(game, game.players[i]);
+	                }
+		}
+		game.isStarted = true;
+		setCurrentBlackCard(game);
+		game.players[0].isCzar = true;
+	}
+};
 
 function endRound(game) {
 	game.winnerId = null;
 	game.winningCardId = null;
 	game.isReadyForScoring = false;
 	game.isReadyForReview = false;
+	game.chosenWhiteCards = [];
 	
 	setCurrentBlackCard(game);
 
@@ -239,6 +324,13 @@ function endRound(game) {
 	}
 }
 
+function setPlayerAmount(gameId, amount) {
+	var game = getGame(gameId);
+	if(game) {
+		game.playerAmount = amount;
+	}
+}
+
 function drawWhiteCard(game, player) {
 	var whiteIndex = Math.floor(Math.random() * game.deck.white.length);
 	player.cards.push(game.deck.white[whiteIndex]);
@@ -263,15 +355,19 @@ function getPlayerByCardId(gameId, cardId) {
 
 function selectCard(gameId, playerId, card) {
 	var player = getPlayer(gameId, playerId);
-	player.selectedWhiteCardId = card;
-	player.isReady = false;
-	var game = getGame(gameId);
-	var readyPlayers = _.filter(game.players, function (x) {
-		return x.selectedWhiteCardId;
-	});
+	if(!player.selectedWhiteCardId) {
+		player.selectedWhiteCardId = card;
+		player.isReady = false;
+		var game = getGame(gameId);
+		game.chosenWhiteCards.push(card);
+		var readyPlayers = _.filter(game.players, function (x) {
+			return x.selectedWhiteCardId;
+		});
 
-	if(readyPlayers.length === game.players.length-1) {
-		game.isReadyForScoring = true;
+		if(readyPlayers.length === game.players.length-1) {
+			game.isReadyForScoring = true;
+			shuffle(game.chosenWhiteCards);
+		}
 	}
 }
 
@@ -287,8 +383,11 @@ function selectWinner(gameId, cardId) {
 	if(player.points === game.pointsToWin) {
 		game = getGame(gameId);
 		game.isOver = true;
-		game.winnerId = player.id;
+		game.isStarted = false;
+		game.winnerId = player.name;
+		return false;
 	}
+	return true;
 }
 
 function reset(){
@@ -297,10 +396,13 @@ function reset(){
 
 
 
+exports.getExpansions = getExpansions;
 exports.addUsername = addUsername;
-exports.removeUsername = removeUsername;
+exports.removeUser = removeUser;
+exports.getUserOfId = getUserOfId;
 exports.checkIfNameTaken = checkIfNameTaken;
 exports.getGamesUserIsIn = getGamesUserIsIn;
+exports.getAvailableGamesForUser = getAvailableGamesForUser;
 exports.getDeck = getDeck;
 exports.removeFromArray = removeFromArray;
 exports.getMaxPlayersPerGame = getMaxPlayersPerGame;
@@ -318,4 +420,4 @@ exports.reset = reset;
 exports.endRound = endRound;
 exports.selectCard = selectCard;
 exports.selectWinner = selectWinner;
-
+exports.setPlayerAmount = setPlayerAmount;

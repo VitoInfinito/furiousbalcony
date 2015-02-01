@@ -21,11 +21,20 @@ angular.module('starter.services', [])
       getGames: function() {
         return games;
       },
+      fetchUsersGames: function() {
+        return $http.get(http + '/listusersgames?id=' + user.id);
+      },
+      fetchAvailableGames: function() {
+        return $http.get(http + '/listavailablegames?id=' + user.id);
+      },
       get: function(gameId) {
         return games[gameId];
       },
       createGame: function() {
         return $http.post(http + '/addGame', { name: user.name + "'s game", isOwner: user.id });
+      },
+      leaveGame: function(gameId) {
+        return $http.post(http + "/leavegame", {gameId: gameId, playerId: user.id});
       }
     }
 }])
@@ -37,10 +46,13 @@ angular.module('starter.services', [])
       fetchGame: function(gameId) {
         return $http.get(http + '/getgamebyid?id=' + gameId);
       },
+      fetchExpansions: function() {
+        return $http.get(http + '/listExpansions');
+      },
       joinGame: function(gameId, playerId, playerName) {
         return $http.post(http + "/joingame", { gameId: gameId, playerId: playerId, playerName: playerName });
       },
-      leaveGame: function(gameId, playerId) {
+      kickPlayer: function(gameId, playerId) {
         return $http.post(http + "/leavegame", {gameId: gameId, playerId: playerId});
       },
       selectCard: function(gameId, playerId, card) {
@@ -52,8 +64,8 @@ angular.module('starter.services', [])
       readyForNextRound: function(gameId, playerId) {
         return $http.post(http + "/readyForNextRound", {gameId: gameId, playerId: playerId});
       },
-      startGame: function(gameId) {
-        return $http.post(http + "/startGame", {gameId: gameId});
+      startGame: function(gameId, expList) {
+        return $http.post(http + "/startGame", {gameId: gameId, expList: expList});
       },
       getUserId: function() {
         return user.id;
@@ -80,18 +92,15 @@ angular.module('starter.services', [])
       return rls;
     }
 
-    if(!user.id) {
-      user.id = rlString(40);
-    }
-    
-    console.log(user.id);
-
     return {
       setLocalName: function(name) {
         user.name = name;
       },
       getName: function() {
         return user.name;
+      },
+      getId: function() {
+        return user.id;
       },
       checkConnection: function(callback) {
         $http.get(http + '/checkConnection').success(function(data) {
@@ -102,20 +111,16 @@ angular.module('starter.services', [])
       },
       checkAndSetName: function(name) {
         return $http.get(http + '/checkName?name=' + name + "&id=" + user.id)
+      },
+      setupNewUserId: function(){
+        user.id = rlString(40);
+      },
+      setupUserId: function(id) {
+        user.id = id;
+      },
+      getUserOfId: function(id) {
+        return $http.get(http + '/getuserofid?id=' + id);
       }
 
     }
-}])
-
-.factory('User', function() {
-  var user = { id: 0, name: 'Testname' };
-
-
-
-  return {
-    get: function() {
-      // Simple index lookup
-      return user;
-    }
-  }
-});
+}]);
