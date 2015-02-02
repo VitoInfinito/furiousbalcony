@@ -544,7 +544,7 @@ angular.module('starter.controllers', [])
     $scope.showExpansionsChoice = function() {
       return $scope.game && !$scope.game.isStarted && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id;
     };
-    
+     //This is to show
 
     joinGame();
 
