@@ -6,3 +6,7 @@ This project is an app that implements a game based on the game Cards against hu
 
 
 The project contains both a client and a server
+
+The server is built with node.js
+
+The client is built using ionic. More information about that can be found at <a href="http://ionicframework.com/">Ionic Framework</a>
