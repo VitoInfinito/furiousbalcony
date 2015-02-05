@@ -55,17 +55,17 @@ angular.module('starter.controllers', [])
   };
 
 
-
-  
-
-  var connectionCallback = function(connected) {
-    if(connected) {
-      $scope.dash.connected = true;
-      checkStoredId();
-    }else {
-      setTimeout(function() {SettingsService.checkConnection(connectionCallback); }, 10000);
-    }
-  };
+  var checkConnection = function() {
+    SettingsService.checkConnection()
+      .then(function(success) {
+        $scope.dash.connected = true;
+        checkStoredId();
+        $scope.dash.motd = success.data;
+      },
+      function(error) {
+        $scope.dash.motd = "There is currently no connection to the server. Will try to connect again shortly."
+      });
+  }
 
   var checkStoredId = function() {
     if(storingCapability) {
@@ -83,13 +83,13 @@ angular.module('starter.controllers', [])
             },
             function(error) {
               $scope.dash.connected = false;
-              SettingsService.checkConnection(connectionCallback);
+              checkConnection();
             });
         }else {
           SettingsService.setupNewUserId();
         }
       }else {
-        SettingsService.checkConnection(connectionCallback);
+        checkConnection();
       }
     }
   }
@@ -101,13 +101,14 @@ angular.module('starter.controllers', [])
         setStatusText("Please enter a name");
       }else if(!$scope.dash.connected) {
         setStatusText("There is currently no connection to the server. Please try again later");
-        SettingsService.checkConnection(connectionCallback);
+        checkConnection();
       }else {
         checkAndSetName($scope.dash.checkname);
       }
     },
     connected: false,
     hasUsername: false,
+    motd: ""
   };
   
   $scope.nightmode = function() { return nightmode };
@@ -129,11 +130,7 @@ angular.module('starter.controllers', [])
     $rootScope.hasUsername = true;
   }
 
-  /*SettingsService.checkConnection()
-    .then(function(success) {
-        $scope.dash.connected = true;
-      });*/
-  SettingsService.checkConnection(connectionCallback);
+  checkConnection();
 
   /*Checking and setting up possible id setup*/
   if(typeof(Storage) !== "undefined") {
@@ -189,7 +186,6 @@ angular.module('starter.controllers', [])
         setStatusText("Please enter a name");
       }else if(!$scope.settings.connected) {
         setStatusText("There is currently no connection to the server. Please try again later");
-        //SettingsService.checkConnection(connectionCallback);
       }else if($scope.settings.currentName === SettingsService.getName()) {
         setStatusText("That is already your username");
       }else {
@@ -544,7 +540,6 @@ angular.module('starter.controllers', [])
     $scope.showExpansionsChoice = function() {
       return $scope.game && !$scope.game.isStarted && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id;
     };
-     //This is to show
 
     joinGame();
 
