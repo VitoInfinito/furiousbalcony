@@ -3,6 +3,7 @@ var hasUsername = false;
 var socket;
 var nightmode = false;
 var storingCapability = false;
+var debug = false;
 
 angular.module('starter.controllers', [])
 
@@ -64,6 +65,7 @@ angular.module('starter.controllers', [])
       },
       function(error) {
         $scope.dash.motd = "There is currently no connection to the server. Will try to connect again shortly."
+        setTimeout(function() { checkConnection() }, 10000);
       });
   }
 
@@ -218,7 +220,7 @@ angular.module('starter.controllers', [])
 
   var initGameListSocket = function() {
     socket.on('gameAdded', function(gameList) {
-      console.info('gameAdded');
+      if(debug) console.info('gameAdded');
       $scope.$apply(function() {
         sortAvailableGamesList(gameList);
       });
@@ -229,14 +231,14 @@ angular.module('starter.controllers', [])
 		Games.fetchGames()
       .then(function(success) {
         var games = success.data;
-        console.info('fetchGames returned ' + games.length + ' items');
+        if(debug) console.info('fetchGames returned ' + games.length + ' items');
         $scope.games = games;
       });
 
     Games.fetchUsersGames()
       .then(function(success) {
         var usersGames = success.data;
-        console.info('fetchUsersGames returned ' + usersGames.length + ' items');
+        if(debug) console.info('fetchUsersGames returned ' + usersGames.length + ' items');
         $scope.usersGames = usersGames;
       });
 
@@ -244,7 +246,7 @@ angular.module('starter.controllers', [])
     Games.fetchAvailableGames()
       .then(function(success) {
         var availableGames = success.data;
-        console.info('fetchAvailableGames returned ' + availableGames.length + ' items');
+        if(debug) console.info('fetchAvailableGames returned ' + availableGames.length + ' items');
         $scope.availableGames = availableGames;
       });
 	};
@@ -252,7 +254,7 @@ angular.module('starter.controllers', [])
   $scope.createGame = function() {
     Games.createGame()
       .then(function(success) {
-        console.info('Game successfully created');
+        if(debug) console.info('Game successfully created');
         $location.url("/tab/game/" + success.data.id);
       });
   }
@@ -266,7 +268,7 @@ angular.module('starter.controllers', [])
         Games.fetchAvailableGames()
           .then(function(success) {
             var availableGames = success.data;
-            console.info('fetchAvailableGames returned ' + availableGames.length + ' items');
+            if(debug) console.info('fetchAvailableGames returned ' + availableGames.length + ' items');
             $scope.availableGames = availableGames;
           });
       });
@@ -287,28 +289,7 @@ angular.module('starter.controllers', [])
 })
 
 .controller('GameDetailCtrl', function($scope, $stateParams, $location, Game) {
-    //var socket;
     var playersPerRow = 4;
-
-    /*var shuffleCards = false;
-    //Fisher-Yates Shuffle
-    var shuffle = function(array) {
-      var m = array.length, t, i;
-
-      // While there remain elements to shuffle…
-      while (m) {
-
-        // Pick a remaining element…
-        i = Math.floor(Math.random() * m--);
-
-        // And swap it with the current element.
-        t = array[m];
-        array[m] = array[i];
-        array[i] = t;
-      }
-
-      return array;
-    }*/
 
     var update = function(game) {
       $scope.chosenWhiteCards = [];
@@ -317,7 +298,6 @@ angular.module('starter.controllers', [])
           $scope.currentPlayer = game.players[i];
         }else {
           delete game.players[i].cards;
-          //delete game.players[i].selectedWhiteCardId;
         }
 
         //Need to implement a better solution eventually
@@ -326,13 +306,9 @@ angular.module('starter.controllers', [])
           delete game.players[i].selectedWhiteCardId;
         }
       }
-/*
-      if(shuffleCards && $scope.chosenWhiteCards.length >= game.players.length - 1) {
-        shuffle($scope.chosenWhiteCards);
-      }*/
 
       $scope.game = game;
-      console.info(game);
+      if(debug) console.info(game);
 
       if(game.isReadyForReview && $scope.countDown <= 0) {
         $scope.selectedCard = null;
@@ -353,14 +329,14 @@ angular.module('starter.controllers', [])
       socket.removeListener('gameAdded');
       socket.removeListener('updateGame');
       socket.on('updateGame', function(game) {
-        console.info('updateGame');
+        if(debug) console.info('updateGame');
         $scope.$apply(function() {
           update(game);
         });
       });
 
       socket.on('kickPlayer', function(data) {
-        console.info('kickPlayer');
+        if(debug) console.info('kickPlayer');
         $scope.$apply(function() {
           if(data.kickedPlayer === $scope.currentPlayer.id) {
             $location.url("/tab/games");
@@ -383,13 +359,13 @@ angular.module('starter.controllers', [])
       $scope.getGame();
       Game.joinGame($stateParams.gameId, Game.getUserId(), Game.getUserName())
         .then(function(success) {
-          console.info("joinGame success");
+          if(debug) console.info("joinGame success");
           update(success.data);
           initGameSocket();
           socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
       },
       function(error) {
-        console.info("joinGame error")
+        if(debug) console.info("joinGame error")
         $scope.gameError = error.data.error;
       });
     };
@@ -425,14 +401,13 @@ angular.module('starter.controllers', [])
           if(!$scope.currentPlayer.isCzar) {
             Game.selectCard($stateParams.gameId, Game.getUserId(), card)
               .then(function(success) {
-                console.info("Card sent successfully");
+                if(debug) console.info("Card sent successfully");
                 update(success.data);
               });
             }else {
               Game.selectWinningCard($stateParams.gameId, card)
                 .then(function(success) {
-                  console.info("Winning Card sent successfully");
-                  //shuffleCards = false;
+                  if(debug) console.info("Winning Card sent successfully");
                   update(success.data);
                 });
             }
