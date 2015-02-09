@@ -1,5 +1,5 @@
 <ion-view title="Games">
-	<ion-content padding="true" ng-class="{'scrollable-night': nightmode()}">
+	<ion-content padding="true">
 		<ion-nav-buttons side="right">
 			<button class="button icon ion-plus" ng-click="createGame()"></button>
 	    </ion-nav-buttons>
@@ -20,7 +20,7 @@
 	    	<ion-item class="fb-listitem" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
-			        <div class="gameListItem"><div class="text-float-right ion-close" ng-click="$event.preventDefault();leaveGame(game.id)"></div></div>
+			        <div class="gameListItem"><div class="text-float-right ion-close closeButton" ng-click="$event.preventDefault();leaveGame(game.id)"></div></div>
 		    	</div>
 	    	</ion-item>
 	    </div>
