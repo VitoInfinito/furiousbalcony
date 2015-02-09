@@ -1,4 +1,5 @@
-var http = 'http://lethe.se:10600';
+//var http = 'http://lethe.se:10600';
+var http = 'http://127.0.0.1:10600';
 var hasUsername = false;
 var socket;
 var nightmode = false;
