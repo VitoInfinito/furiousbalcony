@@ -1,4 +1,5 @@
 var http = "http://lethe.se:10600";
+//var http = 'http://127.0.0.1:10600';
 var user = Object();
 var socket;
 
@@ -20,6 +21,9 @@ angular.module('starter.services', [])
       },
       getGames: function() {
         return games;
+      },
+      getUserId: function() {
+        return user.id;
       },
       fetchUsersGames: function() {
         return $http.get(http + '/listusersgames?id=' + user.id);

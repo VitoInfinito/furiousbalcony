@@ -1,4 +1,5 @@
 var http = 'http://lethe.se:10600';
+//var http = 'http://127.0.0.1:10600';
 var hasUsername = false;
 var socket;
 var nightmode = false;
@@ -21,6 +22,8 @@ angular.module('starter.controllers', [])
 
   var initSocket = function() {
       socket = io.connect(http + '/');
+
+      socket.emit('addUserInformation', { userId: SettingsService.getId(), userName: SettingsService.getName() });
 
       socket.removeListener('gameAdded');
       
@@ -255,7 +258,9 @@ angular.module('starter.controllers', [])
     Games.createGame()
       .then(function(success) {
         if(debug) console.info('Game successfully created');
-        $location.url("/tab/game/" + success.data.id);
+        if(success.data !== 'not allowed') {
+          $location.url("/tab/game/" + success.data.id);
+        }
       });
   }
 
@@ -303,7 +308,7 @@ angular.module('starter.controllers', [])
         //Need to implement a better solution eventually
         if(game.isReadyForScoring && !game.players[i].isCzar) {
           //$scope.chosenWhiteCards.push(game.players[i].selectedWhiteCardId);
-          delete game.players[i].selectedWhiteCardId;
+          //delete game.players[i].selectedWhiteCardId;
         }
       }
 
@@ -361,6 +366,10 @@ angular.module('starter.controllers', [])
         .then(function(success) {
           if(debug) console.info("joinGame success");
           update(success.data);
+          if($scope.currentPlayer.selectedWhiteCardId) {
+            $scope.selectedCard = $scope.currentPlayer.selectedWhiteCardId;
+            $scope.sentCard = $scope.currentPlayer.selectedWhiteCardId;
+          }
           initGameSocket();
           socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
       },

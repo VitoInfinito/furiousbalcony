@@ -5,8 +5,6 @@ var maxPlayers = 8;
 var gameList = [];
 var usernamesTaken = [];
 
-var tempIdCounter = 0;
-
 function getDeck(expList) {
 	if(expList.length > 0) {
 		return cards.getDeck(expList);
@@ -49,7 +47,7 @@ function addUsername(username, userId) {
 	//console.log(existingUser);
 	//usernamesTaken.push({name: username, id: userId});
 	var games = getGamesUserIsIn(userId);
-	console.log("adding username " + username + " with id " + userId);
+	//console.log("adding username " + username + " with id " + userId);
 	if(typeof existingUser !== 'undefined') {
 		
 		//removeUser(existingUser);
@@ -77,11 +75,15 @@ function removeUser(user) {
 }
 
 function checkIfNameTaken(username) {
-	return  typeof _.find(usernamesTaken, function(x) { return x.name === username}) !== 'undefined'
+	return  typeof _.find(usernamesTaken, function(x) { return x.name === username}) !== 'undefined';
 }
 
 function getUserOfId(userId) {
 	return _.find(usernamesTaken, function(x) { return x.id === userId});
+}
+
+function getNameOfGame(gameId) {
+	return getGame(gameId).name;
 }
 
 function changeUserNameOfId(username, userId) {
@@ -142,6 +144,10 @@ function list() {
 	}));
 };
 
+function listTimestamp() {
+	return toInfoTimestamp(gameList);
+}
+
 function listAll() {
 	return toInfo(gameList);
 };
@@ -152,6 +158,12 @@ function toInfo(fullGameList) {
 	});
 };
 
+function toInfoTimestamp(fullGameList) {
+	return _.map(fullGameList, function(game) {
+		return { id: game.id, createdAt: game.createdAt };
+	});
+}
+
 function getRandomId() {
 	var alphabet = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	var rls = "";
@@ -161,11 +173,14 @@ function getRandomId() {
 	return rls;
 }
 
+function canUserCreateGame(userId) {
+	return typeof _.find(gameList, function(x) { return x.isOwner === userId && !x.isStarted }) === 'undefined';
+}
+
 function addGame(game) {
 	game.players = [];
 	game.playerAmount = 8;
 	game.isStarted = false;
-	//game.deck = getDeck();
 	game.currentBlackCard = "";
 	game.pointsToWin = 10;
 	game.history = [];
@@ -175,10 +190,9 @@ function addGame(game) {
 	game.chosenWhiteCards = [];
 	game.isReadyForScoring = false;
 	game.isReadyForReview = false;
-//	game.id = tempIdCounter;
-	tempIdCounter++;
 	game.id = getRandomId();
 	gameList.push(game);
+	game.createdAt = new Date();
 
 	return game;
 };
@@ -213,13 +227,7 @@ function joinGame(game, player) {
 			isCzar: false
 		};
 
-	/*	for(var i=0; i<7; i++) {
-			drawWhiteCard(game, joiningPlayer);
-		}
-	*/	
 		game.players.push(joiningPlayer);
-
-	
 	}
 
 	
@@ -250,6 +258,7 @@ function resetGame(gameId) {
         var game = getGame(gameId);
         if(game) {
                 game.isStarted = false;
+                game.createdAt = new Date();
                 game.chosenWhiteCards = [];
 		game.isOver = false;
                 game.winnerId = null;
@@ -384,6 +393,7 @@ function selectWinner(gameId, cardId) {
 		game = getGame(gameId);
 		game.isOver = true;
 		game.isStarted = false;
+		game.createdAt = new Date();
 		game.winnerId = player.name;
 		return false;
 	}
@@ -400,6 +410,7 @@ exports.getExpansions = getExpansions;
 exports.addUsername = addUsername;
 exports.removeUser = removeUser;
 exports.getUserOfId = getUserOfId;
+exports.getNameOfGame = getNameOfGame;
 exports.checkIfNameTaken = checkIfNameTaken;
 exports.getGamesUserIsIn = getGamesUserIsIn;
 exports.getAvailableGamesForUser = getAvailableGamesForUser;
@@ -408,6 +419,8 @@ exports.removeFromArray = removeFromArray;
 exports.getMaxPlayersPerGame = getMaxPlayersPerGame;
 exports.list = list;
 exports.listAll = listAll;
+exports.listTimestamp = listTimestamp;
+exports.canUserCreateGame = canUserCreateGame;
 exports.addGame = addGame;
 exports.getGame = getGame;
 exports.isPlayerPartOfGame = isPlayerPartOfGame;
