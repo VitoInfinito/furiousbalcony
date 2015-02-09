@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <widget id="com.ionicframework.furiousbalcony357013" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-  <name>Furious Balcony Against Humanity</name>
+  <name>Icy Balcony Against Humanity</name>
   <description>
         A game implementation based on the game Cards against humanity.
     </description>

@@ -11,6 +11,7 @@ var io = require('socket.io').listen(server);
 var socketCount = 0;
 var Game = require('./game.js');
 var players = {};
+var motd = "DISCLAIMER: Due to lack of servers we can currently not assure that a connection to a server can always be established. Server restarts and resets may occur daily.";
 
 var allowCrossDomain = function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
@@ -49,7 +50,7 @@ function delayEndRound(gameId) {
 
 io.sockets.on('connection', function(socket) {
 	socketCount += 1;
-	console.log('User connect, socketcount: ' + socketCount);
+	//console.log('User connect, socketcount: ' + socketCount);
 	socket.join('lobbyRoom');
 
 	socket.on('connectToGame', function(data) {
@@ -93,7 +94,7 @@ io.sockets.on('connection', function(socket) {
 
 	socket.on('disconnect', function() {
 		socketCount -= 1;
-		console.log('User disconnect, socketcount: ' + socketCount);
+		//console.log('User disconnect, socketcount: ' + socketCount);
 		if(socket.playerId && socket.gameId) {
 			console.log('socket disconnect ' + socket.playerId);
 			delete players[socket.gameId][socket.playerId];
@@ -118,7 +119,7 @@ app.get('/list', function(req, res) { res.json(Game.list()); });
 app.get('/listExpansions', function(req, res) { res.json(Game.getExpansions()); });
 app.get('/listusersgames', function(req, res) { res.json(Game.getGamesUserIsIn(req.query.id)); });
 app.get('/listavailablegames', function(req, res) { res.json(Game.getAvailableGamesForUser(req.query.id)); });
-app.get('/checkConnection', function(req, res) { res.send("ok")});
+app.get('/checkConnection', function(req, res) { res.send(motd)});
 app.get('/checkName', function(req, res) {	
 	if(!Game.checkIfNameTaken(req.query.name)) {
 		Game.addUsername(req.query.name, req.query.id);
@@ -175,7 +176,7 @@ app.post('/joingame', function(req, res) {
 });
 
 app.post('/leavegame', function(req, res) {
-//	console.log("User with id " + req.body.playerId + " is leaving game with id " + req.body.gameId);
+	console.log("User with id " + req.body.playerId + " is leaving game with id " + req.body.gameId);
 	Game.leaveGame(req.body.gameId, req.body.playerId);
 	//lobbySocket.emit('gameAdded', Game.list());
 	io.to('lobbyRoom').emit('gameAdded', Game.list());
@@ -192,7 +193,11 @@ app.post('/selectCard', function(req, res) {
 app.post('/selectWinningCard', function(req, res) {
 	var continueGame = Game.selectWinner(req.body.gameId, req.body.card);
 	broadcastGame(req.body.gameId);
-	if(continueGame) delayEndRound(req.body.gameId);
+	if(continueGame) {
+		delayEndRound(req.body.gameId);
+	}else {
+		console.log("Game with id " + req.body.gameId + " is over");
+	}
 	returnGame(req.body.gameId, res);
 });
 
@@ -203,6 +208,7 @@ app.post('/ready', function(req, res) {
 });
 
 app.post('/startGame', function(req, res) {
+	console.log("Game with id " + req.body.gameId + " is starting");
 	Game.startGame(req.body.gameId, req.body.expList);
 	broadcastGame(req.body.gameId);
 	returnGame(req.body.gameId, res);

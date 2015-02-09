@@ -229,7 +229,7 @@ function joinGame(game, player) {
 function leaveGame(gameId, playerId) {
 	var game = getGame(gameId);
 	if(game) {
-		console.log("Player with id " + playerId + " is leaving game with id " + gameId);
+		//console.log("Player with id " + playerId + " is leaving game with id " + gameId);
 		var leavingPlayer = _.find(game.players, function(p) {
 			return p.id === playerId;	
 		});
