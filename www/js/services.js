@@ -102,12 +102,8 @@ angular.module('starter.services', [])
       getId: function() {
         return user.id;
       },
-      checkConnection: function(callback) {
-        $http.get(http + '/checkConnection').success(function(data) {
-          callback(true);
-        }).error(function(data) {
-          callback(false);
-        })
+      checkConnection: function() {
+        return $http.get(http + '/checkConnection');
       },
       checkAndSetName: function(name) {
         return $http.get(http + '/checkName?name=' + name + "&id=" + user.id)

@@ -16,6 +16,10 @@ div.center {
 	text-align: center;
 }
 
+div.motd {
+	color: #FFCC00;
+}
+
 a {
 	color: #ddd;
 }
