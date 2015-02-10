@@ -491,14 +491,18 @@ angular.module('starter.controllers', [])
 
     $scope.getFirstRowOfPlayers = function(){
       if($scope.game && $scope.game.players) {
-        return $scope.game.players.slice(0, $scope.game.players.length > playersPerRow ? playersPerRow : $scope.game.players.length);
-      }
+        if($scope.game.players.length <= 4 || $scope.game.players.length === 7 || $scope.game.players.length === 8) {
+          return $scope.game.players.slice(0, $scope.game.players.length > playersPerRow ? playersPerRow : $scope.game.players.length);
+        }else if($scope.game.players.length === 5 || $scope.game.players.length === 6) {
+          return $scope.game.players.slice(0, 3);
+        }
+      }  
       return []
     };
 
     $scope.getLastRowOfPlayers = function(){
       if($scope.game && $scope.game.players && $scope.isTwoRows()) {
-        return $scope.game.players.slice(playersPerRow, $scope.game.players.length);
+        return $scope.game.players.slice(($scope.game.players.length === 5 || $scope.game.players.length === 6) ? 3 : 4, $scope.game.players.length);
       }
       return [];
     };
