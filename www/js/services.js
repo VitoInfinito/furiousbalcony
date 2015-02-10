@@ -1,7 +1,8 @@
-var http = "http://lethe.se:10600";
-//var http = 'http://127.0.0.1:10600';
+//var http = "http://lethe.se:10600";
+var http = 'http://127.0.0.1:10600';
 var user = Object();
 var socket;
+var version = 3;
 
 angular.module('starter.services', [])
 
@@ -67,6 +68,9 @@ angular.module('starter.services', [])
       },
       readyForNextRound: function(gameId, playerId) {
         return $http.post(http + "/readyForNextRound", {gameId: gameId, playerId: playerId});
+      },
+      sawWinningRound: function(gameId, playerId) {
+        return $http.post(http + "/sawWinningRound", {gameId: gameId, playerId: playerId});
       },
       startGame: function(gameId, expList) {
         return $http.post(http + "/startGame", {gameId: gameId, expList: expList});
