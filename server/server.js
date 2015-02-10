@@ -10,7 +10,11 @@ var io = require('socket.io').listen(server);
 var socketCount = 0;
 var Game = require('./game.js');
 var players = {};
+var version = 3;
+var versionMessage = "Please download the latest updates for a better experience.";
+var outdatedMessage = "You have to download the latest updates to be able to continue.";
 var motd = "DISCLAIMER: Due to lack of servers we can currently not assure that a connection to a server can always be established. Server restarts and resets may occur daily.";
+var versionNoExist = "This version either does not exist or is not supported by this server.";
 
 var allowCrossDomain = function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
@@ -160,7 +164,25 @@ app.get('/list', function(req, res) { res.json(Game.list()); });
 app.get('/listExpansions', function(req, res) { res.json(Game.getExpansions()); });
 app.get('/listusersgames', function(req, res) { res.json(Game.getGamesUserIsIn(req.query.id)); });
 app.get('/listavailablegames', function(req, res) { res.json(Game.getAvailableGamesForUser(req.query.id)); });
-app.get('/checkConnection', function(req, res) { res.send(motd)});
+app.get('/checkConnection', function(req, res) { 
+	if(req.query.version) {	
+		if(isNaN(req.query.version) || parseInt(req.query.version) > version) {
+			res.json({message: versionNoExist, code: '404'});
+		}else if(parseInt(req.query.version) === version){
+			res.json({message: motd, code: '200'});
+		}else if(parseInt(req.query.version) < version) {
+			res.json({message: versionMessage, code: '202'});
+		}else {
+			res.send("Something went wrong when contacting the server");
+		}
+	}else {
+		res.send(outdatedMessage);
+	}
+
+	
+	
+
+});
 app.get('/checkName', function(req, res) {	
 	if(!Game.checkIfNameTaken(req.query.name)) {
 		console.log("Adding username " + req.query.name);

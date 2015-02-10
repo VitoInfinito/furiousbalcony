@@ -2,7 +2,7 @@
 var http = 'http://127.0.0.1:10600';
 var user = Object();
 var socket;
-var version = 3;
+var version = '3';
 
 angular.module('starter.services', [])
 
@@ -111,7 +111,7 @@ angular.module('starter.services', [])
         return user.id;
       },
       checkConnection: function() {
-        return $http.get(http + '/checkConnection');
+        return $http.get(http + '/checkConnection?version=' + version);
       },
       checkAndSetName: function(name) {
         return $http.get(http + '/checkName?name=' + name + "&id=" + user.id)

@@ -9,7 +9,7 @@
 		    <h3>Please enter a username</h3>
 		    <form role="form">
 				<div>
-				    <input ng-model="dash.checkname" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name">
+				    <input ng-model="dash.checkname" type="text" class="fb-basic fb-text-input" id="name" placeholder="Enter name" ng-disabled="lockdown">
 				</div>
 			</form>
 			<div class="fb-basic fb-button fb-name-button" ng-click="dash.checkUsername()">Connect</div>

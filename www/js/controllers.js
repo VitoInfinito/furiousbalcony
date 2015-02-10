@@ -58,13 +58,27 @@ angular.module('starter.controllers', [])
             });
   };
 
-
+  $scope.lockdown = false;
   var checkConnection = function() {
     SettingsService.checkConnection()
       .then(function(success) {
-        $scope.dash.connected = true;
-        checkStoredId();
-        $scope.dash.motd = success.data;
+        $scope.lockdown = false;
+        if(typeof success.data === 'object') {
+          $scope.dash.motd = success.data.message;
+          if(success.data.code === '404') {
+            $scope.lockdown = true;
+          }
+        }else {
+          $scope.dash.motd = success.data;
+          if(success.data === "You have to download the latest updates to be able to continue.") {
+            $scope.lockdown = true;
+          }
+        }
+
+        if(!$scope.lockdown) {
+          $scope.dash.connected = true;
+          checkStoredId();
+        }
       },
       function(error) {
         $scope.dash.motd = "There is currently no connection to the server. Will try to connect again shortly."
@@ -102,7 +116,9 @@ angular.module('starter.controllers', [])
   $scope.errormsg =  "";
   $scope.dash = {
     checkUsername: function() {
-      if(!$scope.dash.checkname) {
+      if($scope.lockdown) {
+        setStatusText("You are not allowed to connect to the server.");
+      }else if(!$scope.dash.checkname) {
         setStatusText("Please enter a name");
       }else if(!$scope.dash.connected) {
         setStatusText("There is currently no connection to the server. Please try again later");
@@ -113,7 +129,7 @@ angular.module('starter.controllers', [])
     },
     connected: false,
     hasUsername: false,
-    motd: ""
+    motd: "Trying to connect to the server."
   };
   
   $scope.nightmode = function() { return nightmode };
