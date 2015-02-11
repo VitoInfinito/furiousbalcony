@@ -254,11 +254,29 @@ function leaveGame(gameId, playerId) {
 				break;
 			}
 		}
+
+		//Check if the player had selected a card
+		for(i=0; i<game.players.length; i++) {
+			if(game.players[i].id === leavingPlayer.id && game.players[i].selectedWhiteCardId) {
+				removeFromArray(game.chosenWhiteCards, game.players[i].selectedWhiteCardId);
+				break;
+			}
+		}
+
 		removeFromArray(game.players, leavingPlayer);
 		if(game.players.length === 0) {
 			removeFromArray(gameList, game);
 		}else if(game.players.length === 2) {
 			resetGame(gameId);
+		}
+
+		//Check if the player who left was the only one that had not chosen a card
+		var readyPlayers = _.filter(game.players, function (x) {
+			return x.selectedWhiteCardId;
+		});
+		if(readyPlayers.length === game.players.length-1) {
+			game.isReadyForScoring = true;
+			shuffle(game.chosenWhiteCards);
 		}
 
 		if(game.isOwner === playerId && game.players.length > 0) {

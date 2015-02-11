@@ -126,6 +126,7 @@ io.sockets.on('connection', function(socket) {
 	socket.on('addUserInformation', function(data) {
 		socket.userId = data.userId;
 		socket.userName = data.userName;
+		socket.clientVersion = data.clientVersion;
 	});
 
 	socket.on('kickPlayer', function(data) {

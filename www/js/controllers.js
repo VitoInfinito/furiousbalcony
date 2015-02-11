@@ -23,7 +23,7 @@ angular.module('starter.controllers', [])
   var initSocket = function() {
       socket = io.connect(http + '/');
 
-      socket.emit('addUserInformation', { userId: SettingsService.getId(), userName: SettingsService.getName() });
+      socket.emit('addUserInformation', { userId: SettingsService.getId(), userName: SettingsService.getName(), clientVersion: SettingsService.getClientVersion() });
 
       socket.removeListener('gameAdded');
       
@@ -402,14 +402,20 @@ angular.module('starter.controllers', [])
     };
 
     $scope.countDown = 0;
+    var countDownTimer = null;
     var countDownNextRound = function(timeLeft) {
       $scope.countDown = timeLeft;
       if(--$scope.countDown > 0) {
-        setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
+        countDownTimer = setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
       }else {
         sawWinningRound();
       }
     };
+
+    $scope.endRound = function(){
+      clearTimeout(countDownTimer);
+      sawWinningRound();
+    }
 
     var startedWatchingEndingOfRound = false;
     var sawWinningRound = function() {
