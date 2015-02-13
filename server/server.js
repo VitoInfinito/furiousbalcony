@@ -10,7 +10,11 @@ var io = require('socket.io').listen(server);
 var socketCount = 0;
 var Game = require('./game.js');
 var players = {};
+var version = 3;
+var versionMessage = "Please download the latest updates for a better experience.";
+var outdatedMessage = "You have to download the latest updates to be able to continue.";
 var motd = "DISCLAIMER: Due to lack of servers we can currently not assure that a connection to a server can always be established. Server restarts and resets may occur daily.";
+var versionNoExist = "This version either does not exist or is not supported by this server.";
 
 var allowCrossDomain = function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
@@ -43,9 +47,9 @@ function gameViewModel(gameId) {
 	return viewModel;
 };
 
-function delayEndRound(gameId) {
-        setTimeout(function() {Game.endRound(Game.getGame(gameId)); broadcastGame(gameId);}, 10000);
-};
+/*function delayEndRound(gameId) {
+        setTimeout(function() {Game.endRound(Game.getGame(gameId)); broadcastGame(gameId);}, 10);
+};*/
 
 function checkIfGamesAreAbandoned(timeoutTime) {
 	
@@ -54,11 +58,15 @@ function checkIfGamesAreAbandoned(timeoutTime) {
 	var games = Game.listTimestamp();
 
 	for(i=0; i<games.length; i++) {
-		if(games[i].createdAt.getTime() + 1800000 < currentTime.getTime()) {
+		if(games[i].createdAt.getTime() + 1800000 < currentTime.getTime() && !games[i].isStarted) {
+			console.log('*')
 			console.log(games[i].name + " was created at " + games[i].createdAt + " and is now considered abandoned. Shutting game down");
+			console.log('*')
 			kickAllPlayersInGameWithId(games[i].id);
 		}
 	}
+
+	io.to('lobbyRoom').emit('gameAdded', Game.list());
 
 	setTimeout(function() { checkIfGamesAreAbandoned(timeoutTime) }, timeoutTime);
 
@@ -66,11 +74,16 @@ function checkIfGamesAreAbandoned(timeoutTime) {
 
 function kickAllPlayersInGameWithId(gameId) {
 	var game = Game.getGame(gameId);
+	var players = [];
+	//Creating list with users in order to kick everyone without bugs
 	for(i=0; i<game.players.length; i++) {
-		var playerId = game.players[i].id;
-		var gameId = game.id;
-		Game.leaveGame(game.id, game.players[i].id);
-		io.to(game.id).emit('kickPlayer', { kickedPlayer : playerId, game: gameViewModel(game.id) });
+		players.push(game.players[i].id);
+	}
+
+
+	for(j=0; j<players.length; j++) {
+		Game.leaveGame(game.id, players[j]);
+		io.to(game.id).emit('kickPlayer', { kickedPlayer : players[j], game: gameViewModel(game.id) });
 	}
 };
 
@@ -87,17 +100,14 @@ io.sockets.on('connection', function(socket) {
 	socket.on('connectToGame', function(data) {
 		var game = Game.getGame(data.gameId);
 		if(game) {
-			//Currently optimized for one game per user
-			if(socket.gameId != game.id) {
+ 			if(socket.gameId != game.id) {
 				if(socket.userName)
 					console.log('User ' + socket.userName + ' is connecting to ' + Game.getNameOfGame(data.gameId));
-				//socket.leave('lobbyRoom');
-				//console.log("got in anyway");
+				//Making sure user only gets updates from one game at a time.
+				socket.leave(socket.gameId);
 				socket.join(data.gameId);
 				socket.gameId = game.id;
 				//broadcastGame(data.gameId);
-			}else {
-						
 			}
 			broadcastGame(data.gameId);
 		} else {
@@ -109,18 +119,21 @@ io.sockets.on('connection', function(socket) {
 	});
 
 	socket.on('joinLobby', function() {
-		console.log("User joined lobby");
+		//console.log("User joined lobby");
 		socket.join('lobbyRoom');
 	});
 
 	socket.on('addUserInformation', function(data) {
 		socket.userId = data.userId;
 		socket.userName = data.userName;
+		socket.clientVersion = data.clientVersion;
 	});
 
 	socket.on('kickPlayer', function(data) {
 		//Add more checks for if user that is kicking is the owner of the game
-		console.log("Kicking " + Game.getUserOfId(data.playerId).name + " from " + Game.getNameOfGame(data.gameId));
+		var user = Game.getUserOfId(data.playerId);
+		if(user)
+			console.log("Kicking " + user.name + " from " + Game.getNameOfGame(data.gameId));
 		Game.leaveGame(data.gameId, data.playerId);
 		io.to(data.gameId).emit('kickPlayer', { kickedPlayer : data.playerId, game: gameViewModel(data.gameId) });
 	});	
@@ -152,7 +165,25 @@ app.get('/list', function(req, res) { res.json(Game.list()); });
 app.get('/listExpansions', function(req, res) { res.json(Game.getExpansions()); });
 app.get('/listusersgames', function(req, res) { res.json(Game.getGamesUserIsIn(req.query.id)); });
 app.get('/listavailablegames', function(req, res) { res.json(Game.getAvailableGamesForUser(req.query.id)); });
-app.get('/checkConnection', function(req, res) { res.send(motd)});
+app.get('/checkConnection', function(req, res) { 
+	if(req.query.version) {	
+		if(isNaN(req.query.version) || parseInt(req.query.version) > version) {
+			res.json({message: versionNoExist, code: '404'});
+		}else if(parseInt(req.query.version) === version){
+			res.json({message: motd, code: '200'});
+		}else if(parseInt(req.query.version) < version) {
+			res.json({message: versionMessage, code: '202'});
+		}else {
+			res.send("Something went wrong when contacting the server");
+		}
+	}else {
+		res.send(outdatedMessage);
+	}
+
+	
+	
+
+});
 app.get('/checkName', function(req, res) {	
 	if(!Game.checkIfNameTaken(req.query.name)) {
 		console.log("Adding username " + req.query.name);
@@ -212,7 +243,9 @@ app.post('/joingame', function(req, res) {
 });
 
 app.post('/leavegame', function(req, res) {
-	console.log(Game.getUserOfId(req.body.playerId).name + " is leaving " + Game.getNameOfGame(req.body.gameId));
+	var user = Game.getUserOfId(req.body.playerId);
+	if(user)
+		console.log(user.name + " is leaving " + Game.getNameOfGame(req.body.gameId));
 	Game.leaveGame(req.body.gameId, req.body.playerId);
 	//lobbySocket.emit('gameAdded', Game.list());
 	io.to('lobbyRoom').emit('gameAdded', Game.list());
@@ -230,7 +263,9 @@ app.post('/selectWinningCard', function(req, res) {
 	var continueGame = Game.selectWinner(req.body.gameId, req.body.card);
 	broadcastGame(req.body.gameId);
 	if(continueGame) {
-		delayEndRound(req.body.gameId);
+		//delayEndRound(req.body.gameId);
+		Game.endRound(Game.getGame(req.body.gameId));
+		broadcastGame(req.body.gameId);
 	}else {
 		console.log(Game.getNameOfGame(req.body.gameId) + " is over");
 	}
@@ -240,6 +275,13 @@ app.post('/selectWinningCard', function(req, res) {
 app.post('/ready', function(req, res) {
 //	Game.readyForNextRound(req.body.gameId, req.body.playerId);
 	broadcastGame(req.body.gameId);
+	returnGame(req.body.gameId, res);
+});
+
+app.post('/sawWinningRound', function(req, res) {
+	Game.sawWinningRound(req.body.gameId, req.body.playerId);
+	//console.log(Game.getUserOfId(req.body.playerId).name);
+	//broadcastGame(req.body.gameId);
 	returnGame(req.body.gameId, res);
 });
 

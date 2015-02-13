@@ -14,8 +14,6 @@
 			<tr class="playerViewTr">
 		    	<td ng-repeat="player in getFirstRowOfPlayers()">
 				    <i ng-show="canKick(player.id)" class="ion-close" ng-click="$event.preventDefault();kickPlayer(player.id)"></i> {{player.name}}
-
-				   <!-- <div class="text-float-right ion-close" ng-click="$event.preventDefault();leaveGame(game.id)"></div>-->
 				</td>
 			</tr>
 			<tr class="playerViewTr">
@@ -43,10 +41,17 @@
 
 
 
-		<div class="fb-basic fb-button fb-name-button" ng-show="showStartGameButton()" ng-click="startGame()"><span ng-show="notificationGameIsOver()">Re</span>Start game</div>
+		<div class="fb-basic fb-button fb-name-button" ng-show="showStartGameButton()" ng-click="startGame()">
+			<span ng-show="notificationGameIsOver()">Res</span>
+			<span ng-hide="notificationGameIsOver()">S</span>tart game
+		</div>
 
-		<div class="card black-card" ng-show="game.currentBlackCard !== '' && game.isStarted" ng-class="{'black-card-night': nightmode()}">
+		<div class="card black-card" ng-show="showBlackCard()">
 			{{game.currentBlackCard}}
+		</div>
+
+		<div class="card black-card" ng-show="watchRoundEnd()">
+			{{game.history[game.history.length-1].black}}
 		</div>
 
 		<div class="notification" ng-show="notificationIsCzar()">
@@ -55,6 +60,10 @@
 
 		<div class="notification" ng-show="notificationSelectCard()">
 			Click a card to select it
+		</div>
+
+		<div class="notification" ng-show="notificationSendWinningCard()">
+			Click the card again to select it as the winning card
 		</div>
 
 		<div class="notification" ng-show="notificationSendCard()">
@@ -77,18 +86,36 @@
 			Waiting for more players to join
 		</div>
 
+		<div class="notification" ng-show="notificationWaitingOnPlayersToJoinOrStart()">
+			Waiting for more players to join or for the owner to start the game
+		</div>
+
+		<div class="notification" ng-show="watchRoundEnd()">
+			{{game.history[game.history.length-1].winner}} won the round
+		</div>
+
 		<div class="notification" ng-show="notificationGameIsOver()">
-			Game is over and player {{game.winnerId}} won
+			Game is over and player {{game.winnerId}} won the game
+		</div>
+
+		<div class="fb-basic fb-button fb-name-button" ng-show="watchRoundEnd()" ng-click="endRound()">
+			Skip review
 		</div>
 
 		
-
+		
 
 		<!--To be implemented
 		<div class="range">
 		  <input type="range" name="playerAmount" ng-model="playerAmount">
 		  {{playerAmount}}
 		</div>-->
+
+		<div id="card-container" ng-show="notificationGameIsOver()">
+			<div class="card" ng-repeat="round in game.history">
+				Round {{$index+1}}, {{round.winner}} won with the black card {{round.black}} for the white card {{round.white}}
+			</div>
+		</div>
 
 
 		<div class="notification" ng-show="showExpansionsChoice()">
@@ -119,11 +146,21 @@
 			</div>
 		</div>
 
+		<div id="card-container" ng-show="watchRoundEnd()">
+			<div class="card" ng-repeat="card in game.reviewWhiteCards" ng-class="{selectedCard: card === game.history[game.history.length-1].white}">
+				{{card}}
+			</div>
+		</div>
+
 		<div id="card-container" ng-show="showReviewCardBox()">
 			<div class="card" ng-repeat="card in game.chosenWhiteCards" ng-class="{selectedCard: card === game.winningCardId}">
 				{{card}}
 			</div>
 		</div>
+
+
+
+		<div id="notification"
 
 	</ion-content>
 </ion-view>

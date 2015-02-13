@@ -23,7 +23,7 @@ angular.module('starter.controllers', [])
   var initSocket = function() {
       socket = io.connect(http + '/');
 
-      socket.emit('addUserInformation', { userId: SettingsService.getId(), userName: SettingsService.getName() });
+      socket.emit('addUserInformation', { userId: SettingsService.getId(), userName: SettingsService.getName(), clientVersion: SettingsService.getClientVersion() });
 
       socket.removeListener('gameAdded');
       
@@ -58,13 +58,27 @@ angular.module('starter.controllers', [])
             });
   };
 
-
+  $scope.lockdown = false;
   var checkConnection = function() {
     SettingsService.checkConnection()
       .then(function(success) {
-        $scope.dash.connected = true;
-        checkStoredId();
-        $scope.dash.motd = success.data;
+        $scope.lockdown = false;
+        if(typeof success.data === 'object') {
+          $scope.dash.motd = success.data.message;
+          if(success.data.code === '404') {
+            $scope.lockdown = true;
+          }
+        }else {
+          $scope.dash.motd = success.data;
+          if(success.data === "You have to download the latest updates to be able to continue.") {
+            $scope.lockdown = true;
+          }
+        }
+
+        if(!$scope.lockdown) {
+          $scope.dash.connected = true;
+          checkStoredId();
+        }
       },
       function(error) {
         $scope.dash.motd = "There is currently no connection to the server. Will try to connect again shortly."
@@ -102,7 +116,9 @@ angular.module('starter.controllers', [])
   $scope.errormsg =  "";
   $scope.dash = {
     checkUsername: function() {
-      if(!$scope.dash.checkname) {
+      if($scope.lockdown) {
+        setStatusText("You are not allowed to connect to the server.");
+      }else if(!$scope.dash.checkname) {
         setStatusText("Please enter a name");
       }else if(!$scope.dash.connected) {
         setStatusText("There is currently no connection to the server. Please try again later");
@@ -113,7 +129,7 @@ angular.module('starter.controllers', [])
     },
     connected: false,
     hasUsername: false,
-    motd: ""
+    motd: "Trying to connect to the server."
   };
   
   $scope.nightmode = function() { return nightmode };
@@ -285,9 +301,6 @@ angular.module('starter.controllers', [])
   }
 
 
-
-
-
 	$scope.reload();
   initGameListSocket();
   
@@ -296,29 +309,38 @@ angular.module('starter.controllers', [])
 .controller('GameDetailCtrl', function($scope, $stateParams, $location, Game) {
     var playersPerRow = 4;
 
+
     var update = function(game) {
       $scope.chosenWhiteCards = [];
-      for(i=0; i<game.players.length; i++) {
-        if(game.players[i].id === Game.getUserId()) {
-          $scope.currentPlayer = game.players[i];
-        }else {
-          delete game.players[i].cards;
+      if(game) {
+        for(i=0; i<game.players.length; i++) {
+          if(game.players[i].id === Game.getUserId()) {
+            $scope.currentPlayer = game.players[i];
+          }else {
+            delete game.players[i].cards;
+          }
+
+          //Need to implement a better solution eventually
+          if(game.isReadyForScoring && !game.players[i].isCzar) {
+            //$scope.chosenWhiteCards.push(game.players[i].selectedWhiteCardId);
+            //delete game.players[i].selectedWhiteCardId;
+          }
+        }
+        //console.info($scope.currentPlayer + " " + $scope.currentPlayer.isReadyToSeeWinningCard + " " + !$scope.currentPlayer.hasSeenWinningRound + " " + !startedWatchingEndingOfRound);
+        if($scope.currentPlayer && $scope.currentPlayer.isReadyToSeeWinningCard && !$scope.currentPlayer.hasSeenWinningRound && !startedWatchingEndingOfRound) {
+         // alert("yaman");
+          startedWatchingEndingOfRound = true;
+          countDownNextRound(10);
         }
 
-        //Need to implement a better solution eventually
-        if(game.isReadyForScoring && !game.players[i].isCzar) {
-          //$scope.chosenWhiteCards.push(game.players[i].selectedWhiteCardId);
-          //delete game.players[i].selectedWhiteCardId;
+        $scope.game = game;
+        if(debug) console.info(game);
+
+        if(game.isReadyForReview && $scope.countDown <= 0) {
+          //$scope.selectedCard = null;
+          //$scope.sentCard = null;
+          //countDownNextRound(10);
         }
-      }
-
-      $scope.game = game;
-      if(debug) console.info(game);
-
-      if(game.isReadyForReview && $scope.countDown <= 0) {
-        $scope.selectedCard = null;
-        $scope.sentCard = null;
-        countDownNextRound(10);
       }
     };
 
@@ -380,14 +402,33 @@ angular.module('starter.controllers', [])
     };
 
     $scope.countDown = 0;
+    var countDownTimer = null;
     var countDownNextRound = function(timeLeft) {
       $scope.countDown = timeLeft;
       if(--$scope.countDown > 0) {
-        setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
+        countDownTimer = setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
+      }else {
+        sawWinningRound();
       }
     };
 
-    $scope.expansions = [];
+    $scope.endRound = function(){
+      clearTimeout(countDownTimer);
+      sawWinningRound();
+    }
+
+    var startedWatchingEndingOfRound = false;
+    var sawWinningRound = function() {
+      startedWatchingEndingOfRound = false;
+      Game.sawWinningRound($stateParams.gameId, Game.getUserId())
+        .then(function(success) {
+          $scope.selectedCard = null;
+          $scope.sentCard = null;
+          update(success.data);
+        });
+    };
+
+    
 
 
    /* $scope.playerAmount = 5;
@@ -399,6 +440,7 @@ angular.module('starter.controllers', [])
       console.log($scope.playerAmount);
     });*/
 
+    $scope.expansions = [];
     /**Code for holding the selected and sent card for both player and czar**/
     $scope.chosenWhiteCards = [];
     $scope.selectedCard = null;
@@ -455,14 +497,18 @@ angular.module('starter.controllers', [])
 
     $scope.getFirstRowOfPlayers = function(){
       if($scope.game && $scope.game.players) {
-        return $scope.game.players.slice(0, $scope.game.players.length > playersPerRow ? playersPerRow : $scope.game.players.length);
-      }
+        if($scope.game.players.length <= 4 || $scope.game.players.length === 7 || $scope.game.players.length === 8) {
+          return $scope.game.players.slice(0, $scope.game.players.length > playersPerRow ? playersPerRow : $scope.game.players.length);
+        }else if($scope.game.players.length === 5 || $scope.game.players.length === 6) {
+          return $scope.game.players.slice(0, 3);
+        }
+      }  
       return []
     };
 
     $scope.getLastRowOfPlayers = function(){
       if($scope.game && $scope.game.players && $scope.isTwoRows()) {
-        return $scope.game.players.slice(playersPerRow, $scope.game.players.length);
+        return $scope.game.players.slice(($scope.game.players.length === 5 || $scope.game.players.length === 6) ? 3 : 4, $scope.game.players.length);
       }
       return [];
     };
@@ -470,23 +516,33 @@ angular.module('starter.controllers', [])
     
     /**Notifications and show $scope functions**/
     $scope.notificationIsCzar = function () {
-      return $scope.currentPlayer && $scope.currentPlayer.isCzar && !$scope.game.isReadyForReview && $scope.game.isStarted;
+      //return $scope.currentPlayer && $scope.currentPlayer.isCzar && !$scope.game.isReadyForReview && $scope.game.isStarted;
+      return $scope.currentPlayer && $scope.currentPlayer.isCzar && !$scope.currentPlayer.isReadyToSeeWinningCard && $scope.game.isStarted;
     };
+
+    $scope.showBlackCard = function() {
+      return $scope.game && $scope.game.currentBlackCard !== '' && $scope.game.isStarted && !startedWatchingEndingOfRound;
+    }
 
     $scope.canKick = function(playerId) {
       return $scope.currentPlayer && $scope.game && $scope.currentPlayer.id === $scope.game.isOwner && $scope.currentPlayer.id !== playerId;
     }
 
     $scope.notificationSelectCard = function() {
-      return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && !$scope.selectedCard && $scope.game.isStarted && !$scope.game.isReadyForReview;
+      //return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && !$scope.selectedCard && $scope.game.isStarted && !$scope.game.isReadyForReview;
+      return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && !$scope.selectedCard && $scope.game.isStarted && !startedWatchingEndingOfRound;
     };
 
     $scope.notificationSendCard = function() {
-      return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && $scope.selectedCard && !$scope.sentCard;
+      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.selectedCard && !$scope.sentCard;
     };
 
+    $scope.notificationSendWinningCard = function() {
+      return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isReadyForScoring && $scope.selectedCard && !$scope.sentCard;
+    }
+
     $scope.notificationWaitingOnPlayers = function() {
-      return $scope.currentPlayer && ($scope.currentPlayer.isCzar || $scope.sentCard) && !$scope.game.isReadyForScoring && $scope.game.isStarted;
+      return !startedWatchingEndingOfRound && $scope.currentPlayer && ($scope.currentPlayer.isCzar || $scope.sentCard) && !$scope.game.isReadyForScoring && $scope.game.isStarted;
     };
 
     $scope.notificationWaitingOnCzar = function() {
@@ -494,11 +550,16 @@ angular.module('starter.controllers', [])
     };
 
     $scope.notificationNextRound = function() {
-      return $scope.game && $scope.game.isReadyForReview && !$scope.game.isOver;
+      //return $scope.game && $scope.game.isReadyForReview && !$scope.game.isOver;
+      return $scope.game && $scope.currentPlayer && $scope.currentPlayer.isReadyToSeeWinningCard && !$scope.game.isOver;
     };
 
     $scope.notificationWaitingOnPlayersToJoin = function() {
       return $scope.game && !$scope.game.isStarted && $scope.game.players.length < 3;
+    };
+
+    $scope.notificationWaitingOnPlayersToJoinOrStart = function() {
+      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner !== $scope.currentPlayer.id;
     };
 
     $scope.notificationGameIsOver = function() {
@@ -506,15 +567,22 @@ angular.module('starter.controllers', [])
     };
 
     $scope.showCzarCardBox = function() {
-      return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring && !$scope.game.isReadyForReview;
+      //return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring && !$scope.game.isReadyForReview;
+      return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring && !$scope.currentPlayer.isReadyToSeeWinningCard && !startedWatchingEndingOfRound;
+
     };
 
+    $scope.watchRoundEnd = function() {
+      return startedWatchingEndingOfRound;
+    }
+
     $scope.showReviewCardBox = function() {
-      return $scope.currentPlayer && $scope.game.isStarted && ($scope.game.isReadyForReview || (!$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring));
+      //return $scope.currentPlayer && $scope.game.isStarted && ($scope.game.isReadyForReview || (!$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring));
+      return !startedWatchingEndingOfRound && $scope.currentPlayer && $scope.game.isStarted && (/*startedWatchingEndingOfRound || */(!$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring));
     };
 
     $scope.showCardBox = function() {
-      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.game.isStarted && !$scope.game.isReadyForScoring;
+      return $scope.currentPlayer && !$scope.currentPlayer.isCzar && $scope.game.isStarted && !$scope.game.isReadyForScoring && !startedWatchingEndingOfRound;
     };
 
     $scope.showStartGameButton = function() {

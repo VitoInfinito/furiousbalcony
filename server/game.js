@@ -160,7 +160,7 @@ function toInfo(fullGameList) {
 
 function toInfoTimestamp(fullGameList) {
 	return _.map(fullGameList, function(game) {
-		return { id: game.id, createdAt: game.createdAt };
+		return { id: game.id, name: game.name, isStarted: game.isStarted, createdAt: game.createdAt };
 	});
 }
 
@@ -188,11 +188,13 @@ function addGame(game) {
 	game.winningCardId = null;
 	game.winnerId = null;
 	game.chosenWhiteCards = [];
+	game.reviewWhiteCards = [];
 	game.isReadyForScoring = false;
 	game.isReadyForReview = false;
 	game.id = getRandomId();
-	gameList.push(game);
 	game.createdAt = new Date();
+
+	gameList.push(game);
 
 	return game;
 };
@@ -221,6 +223,8 @@ function joinGame(game, player) {
 			id: player.id,
 			name: player.name,
 			isReady: false,
+			hasSeenWinningRound: true,
+			isReadyToSeeWinningCard: false,
 			cards: [],
 			selectedWhiteCardId: null,
 			points: 0,
@@ -241,11 +245,38 @@ function leaveGame(gameId, playerId) {
 		var leavingPlayer = _.find(game.players, function(p) {
 			return p.id === playerId;	
 		});
+
+		//Change next player to become czar if leaving player is czar
+		for(i=0; i<game.players.length; i++) {
+			if(game.players[i].id === leavingPlayer.id && game.players[i].isCzar) {
+				game.players[(i+1)%game.players.length].isCzar = true;
+				game.players[(i+1)%game.players.length].isReady = false;
+				break;
+			}
+		}
+
+		//Check if the player had selected a card
+		for(i=0; i<game.players.length; i++) {
+			if(game.players[i].id === leavingPlayer.id && game.players[i].selectedWhiteCardId) {
+				removeFromArray(game.chosenWhiteCards, game.players[i].selectedWhiteCardId);
+				break;
+			}
+		}
+
 		removeFromArray(game.players, leavingPlayer);
 		if(game.players.length === 0) {
 			removeFromArray(gameList, game);
 		}else if(game.players.length === 2) {
 			resetGame(gameId);
+		}
+
+		//Check if the player who left was the only one that had not chosen a card
+		var readyPlayers = _.filter(game.players, function (x) {
+			return x.selectedWhiteCardId;
+		});
+		if(readyPlayers.length === game.players.length-1) {
+			game.isReadyForScoring = true;
+			shuffle(game.chosenWhiteCards);
 		}
 
 		if(game.isOwner === playerId && game.players.length > 0) {
@@ -257,21 +288,24 @@ function leaveGame(gameId, playerId) {
 function resetGame(gameId) {
         var game = getGame(gameId);
         if(game) {
-                game.isStarted = false;
-                game.createdAt = new Date();
-                game.chosenWhiteCards = [];
-		game.isOver = false;
-                game.winnerId = null;
-		game.history = [];
-		game.currentBlackCard = "";
-		game.isReadyForScoring = false;
-		game.isReadyForReview = false;
-                for(x in game.players) {
-                        game.players[x].selectedWhiteCardId = null;
-			game.players[x].isCzar = false;
-			game.players[x].isReady = false;
-			game.players[x].points = 0;
-                }
+            game.isStarted = false;
+            game.createdAt = new Date();
+            game.chosenWhiteCards = [];
+            game.reviewWhiteCards = [];
+			game.isOver = false;
+            game.winnerId = null;
+			game.history = [];
+			game.currentBlackCard = "";
+			game.isReadyForScoring = false;
+			game.isReadyForReview = false;
+            for(x in game.players) {
+                game.players[x].selectedWhiteCardId = null;
+				game.players[x].isCzar = false;
+				game.players[x].isReady = false;
+				game.players[x].points = 0;
+				game.players[x].hasSeenWinningRound = true;
+				game.players[x].isReadyToSeeWinningCard = false;
+            }
         }
 
 };
@@ -300,6 +334,7 @@ function endRound(game) {
 	game.winningCardId = null;
 	game.isReadyForScoring = false;
 	game.isReadyForReview = false;
+	game.reviewWhiteCards = game.chosenWhiteCards;
 	game.chosenWhiteCards = [];
 	
 	setCurrentBlackCard(game);
@@ -310,7 +345,7 @@ function endRound(game) {
 			drawWhiteCard(game, player);
 		}
 	
-		player.isReady = false;
+		//player.isReady = false;
 		player.selectedWhiteCardId = null;
 
 	});
@@ -364,9 +399,10 @@ function getPlayerByCardId(gameId, cardId) {
 
 function selectCard(gameId, playerId, card) {
 	var player = getPlayer(gameId, playerId);
-	if(!player.selectedWhiteCardId) {
+	if(player && !player.selectedWhiteCardId) {
 		player.selectedWhiteCardId = card;
 		player.isReady = false;
+		//player.hasSeenWinningRound = false;
 		var game = getGame(gameId);
 		game.chosenWhiteCards.push(card);
 		var readyPlayers = _.filter(game.players, function (x) {
@@ -380,6 +416,14 @@ function selectCard(gameId, playerId, card) {
 	}
 }
 
+function sawWinningRound(gameId, playerId) {
+	var player = getPlayer(gameId, playerId);
+	if(player) {
+		player.hasSeenWinningRound = true;
+		player.isReadyToSeeWinningCard = false;
+	}
+}
+
 function selectWinner(gameId, cardId) {
 	var player = getPlayerByCardId(gameId, cardId);
 	var game = getGame(gameId);
@@ -388,6 +432,11 @@ function selectWinner(gameId, cardId) {
 	player.points = player.points + 1;
 	game.history.push({ black: game.currentBlackCard, white: cardId, winner: player.name });
 //	delayEndRound(game);
+
+	for(i=0; i<game.players.length; i++) {
+		game.players[i].hasSeenWinningRound = false;
+		game.players[i].isReadyToSeeWinningCard = true;
+	}
 
 	if(player.points === game.pointsToWin) {
 		game = getGame(gameId);
@@ -432,5 +481,6 @@ exports.getPlayer = getPlayer;
 exports.reset = reset;
 exports.endRound = endRound;
 exports.selectCard = selectCard;
+exports.sawWinningRound = sawWinningRound;
 exports.selectWinner = selectWinner;
 exports.setPlayerAmount = setPlayerAmount;
