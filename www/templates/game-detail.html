@@ -42,8 +42,11 @@
 
 
 		<div class="fb-basic fb-button fb-name-button" ng-show="showStartGameButton()" ng-click="startGame()">
-			<span ng-show="notificationGameIsOver()">Res</span>
-			<span ng-hide="notificationGameIsOver()">S</span>tart game
+			Start game
+		</div>
+
+		<div class="fb-basic fb-button fb-name-button" ng-show="showRestartGameButton()" ng-click="startGame()">
+			Restart game
 		</div>
 
 		<div class="card black-card" ng-show="showBlackCard()">
@@ -135,7 +138,7 @@
 		</div>
 
 		<div id="card-container" ng-show="showCardBox()">
-			<div class="card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
+			<div class="card white-card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
 				{{card}}
 			</div>
 		</div>

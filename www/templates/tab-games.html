@@ -14,9 +14,6 @@
 		</div>
 		
 		<div class="list list-container" ng-show="gameList.user">
-			<div class="gameListHead">
-		  		<div class="gameListItem">Name</div>
-			</div>
 	    	<ion-item class="fb-listitem" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
@@ -35,11 +32,7 @@
 		</div>
 
 		<div class="list list-container" ng-show="gameList.rest">
-		    <div class="gameListHead">
-		  		<div class="gameListItem">Name</div>
-				<div class="gameListItem"><div class="text-float-right">Players</div></div>
-			</div>
-	    	<ion-item ng-repeat="game in availableGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+	    	<ion-item class="fb-listitem" ng-repeat="game in availableGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
 			        <div class="gameListItem"><div class="text-float-right">{{game.players}}/8</div></div>

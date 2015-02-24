@@ -1,5 +1,5 @@
-var http = 'http://lethe.se:10600';
-//var http = 'http://127.0.0.1:10600';
+//var http = 'http://lethe.se:10600';
+var http = 'http://127.0.0.1:10600';
 var hasUsername = false;
 var socket;
 var nightmode = false;
@@ -222,22 +222,44 @@ angular.module('starter.controllers', [])
 
 .controller('GamesCtrl', function($scope, $location, Games) {
 
+
+  $scope.usersGames = [];
   var sortAvailableGamesList = function(gameList) {
     if($scope.availableGames) {
+        //var newUsersGames = [];
           for(var i=0; i<$scope.usersGames.length; i++) {
-            for(var j=0; j<gameList.length; j++) {
-              if($scope.usersGames[i].id === gameList[j].id){
-                gameList.splice(j, 1);
-                break;
-              } 
-            }
+              for(var j=0; j<gameList.length; j++) {
+                if($scope.usersGames[i].id === gameList[j].id){
+                  //TODO: Making new users game list, solution can still be improved
+
+                  //newUsersGames.push(gameList[j]);
+                  gameList.splice(j, 1);
+                  break;
+                } 
+              }
           }
+         // $scope.usersGames = newUsersGames; 
         }
 
         $scope.availableGames = gameList;
   }
 
   var initGameListSocket = function() {
+
+  /*  Games.getUserOfId(localStorage.userId)
+          .then(function(success) {
+            Games.checkAndSetName()
+              if(success.data === "noexist") {
+              //  socket = io.connect(http + '/');
+              //  socket.emit('addUserInformation', { userId: SettingsService.getId(), userName: SettingsService.getName(), clientVersion: SettingsService.getClientVersion() });
+              
+              alert("noexist");
+              }else {
+                alert("exist");
+              }
+            });*/
+    
+
     socket.on('gameAdded', function(gameList) {
       if(debug) console.info('gameAdded');
       $scope.$apply(function() {
@@ -247,12 +269,12 @@ angular.module('starter.controllers', [])
   };
 
 	$scope.reload = function() {
-		Games.fetchGames()
+		/*Games.fetchGames()
       .then(function(success) {
         var games = success.data;
         if(debug) console.info('fetchGames returned ' + games.length + ' items');
         $scope.games = games;
-      });
+      });*/
 
     Games.fetchUsersGames()
       .then(function(success) {
@@ -308,6 +330,7 @@ angular.module('starter.controllers', [])
 
 .controller('GameDetailCtrl', function($scope, $stateParams, $location, Game) {
     var playersPerRow = 4;
+    var gameWasOver = false;
 
 
     var update = function(game) {
@@ -331,6 +354,12 @@ angular.module('starter.controllers', [])
          // alert("yaman");
           startedWatchingEndingOfRound = true;
           countDownNextRound(10);
+        }
+
+        if(gameWasOver && game.isStarted) {
+          $scope.selectedCard = null;
+          $scope.sentCard = null;
+          startedWatchingEndingOfRound = false;
         }
 
         $scope.game = game;
@@ -383,7 +412,7 @@ angular.module('starter.controllers', [])
     };
     
     var joinGame = function() {
-      $scope.getGame();
+      //$scope.getGame();
       Game.joinGame($stateParams.gameId, Game.getUserId(), Game.getUserName())
         .then(function(success) {
           if(debug) console.info("joinGame success");
@@ -397,6 +426,9 @@ angular.module('starter.controllers', [])
       },
       function(error) {
         if(debug) console.info("joinGame error")
+        if(error.data.error === "invalid GameId" || error.data.error === "too many players") {
+          $location.url("/tab/games");
+        }
         $scope.gameError = error.data.error;
       });
     };
@@ -406,7 +438,11 @@ angular.module('starter.controllers', [])
     var countDownNextRound = function(timeLeft) {
       $scope.countDown = timeLeft;
       if(--$scope.countDown > 0) {
-        countDownTimer = setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
+        if($scope.game && !$scope.game.isOver) {
+          countDownTimer = setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
+        }else {
+          gameWasOver = true;
+        }
       }else {
         sawWinningRound();
       }
@@ -482,13 +518,13 @@ angular.module('starter.controllers', [])
         });
     };
 
-    $scope.getGame = function() {
+    /*$scope.getGame = function() {
       Game.fetchGame($stateParams.gameId)
         .then(function(success) {
           $scope.game = success.data;
           update(success.data);
         });
-    };
+    };*/
 
     /**Fetching of players for the two possible rows of people in gui**/
     $scope.isTwoRows = function() {
@@ -586,7 +622,11 @@ angular.module('starter.controllers', [])
     };
 
     $scope.showStartGameButton = function() {
-      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id;
+      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id && !$scope.game.isOver;
+    };
+
+    $scope.showRestartGameButton = function() {
+      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id && $scope.game.isOver;
     };
 
     $scope.showExpansionsChoice = function() {

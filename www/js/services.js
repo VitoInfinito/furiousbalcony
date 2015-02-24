@@ -1,5 +1,5 @@
-var http = "http://lethe.se:10600";
-//var http = 'http://127.0.0.1:10600';
+//var http = "http://lethe.se:10600";
+var http = 'http://127.0.0.1:10600';
 var user = Object();
 var socket;
 var version = '3';
@@ -34,6 +34,9 @@ angular.module('starter.services', [])
       },
       get: function(gameId) {
         return games[gameId];
+      },
+      getUserOfId: function(userId) {
+        return $http.get(http + '/getuserofid?id=' + userId);
       },
       createGame: function() {
         return $http.post(http + '/addGame', { name: user.name + "'s game", isOwner: user.id });

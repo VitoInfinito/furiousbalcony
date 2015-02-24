@@ -19,8 +19,56 @@
   animation:1s delayedTransitionIn linear; 
 }
 
+.notification.ng-hide-remove {
+  -webkit-animation:1.5s showNotification linear; 
+  animation:1.5s showNotification linear; 
+}
+
+
+
+
 
 /*---------Animations--------*/
+/*----------Notify-----------*/
+
+@-webkit-keyframes showNotification {
+  0% {
+    /*box-shadow: 0 0 3pt 2pt #ccccff;*/
+    background-color:#FF0000;
+  }
+
+  90% {
+    background-color:#FF0000;
+  }
+
+  100% {
+    box-shadow: none;
+    background-color:default;
+  }
+}
+
+@keyframes showNotification {
+  0% {
+    /*box-shadow: 0 0 3pt 2pt #ccccff;*/
+    background-color:#FF0000;
+  }
+
+  90% {
+    background-color:#FF0000;
+  }
+
+  100% {
+    box-shadow:none;
+    background-color:default;
+  }
+}
+
+/*-----Expand cards--------*
+
+
+
+
+/*------Enter and leave------*/
 
 @-webkit-keyframes leaveRight {
   0% {
@@ -68,6 +116,42 @@
   }
 
   100% {
+    opacity: 1;
+  }
+}
+
+
+@-webkit-keyframes delayedEnterLeft {
+  0% {
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes delayedEnterLeft {
+  0% {
+    -webkit-transform: translateX(-150%);
+    -ms-transform: translateX(-150%);
+    transform: translateX(-150%);
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  50% {
+    -webkit-transform: translateX(-150%);
+    -ms-transform: translateX(-150%);
+    transform: translateX(-150%);
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  100% {
+    visibility: default;
     opacity: 1;
   }
 }
