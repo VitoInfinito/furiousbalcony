@@ -233,6 +233,54 @@ tr.playerViewTr {
 
 #card-container{
 	margin-top:1em;
+	position:relative;
+
+}
+
+
+
+div#card-container div.card {
+	position:absolute;
+	height:2.2em;
+	display:table;
+}
+
+div.card span {
+	display:table-cell;
+	vertical-align: middle;
+}
+
+div#card-container div.card:first-child {
+	top:0;
+}
+
+div#card-container div.card:nth-child(2) {
+	top:3.5em;
+
+}
+
+div#card-container div.card:nth-child(3) {
+	top:7em;
+
+}
+
+div#card-container div.card:nth-child(4) {
+	top:10.5em;
+
+}
+
+div#card-container div.card:nth-child(5) {
+	top:14em;
+
+}
+
+div#card-container div.card:nth-child(6) {
+	top:17.5em;
+
+}
+
+div#card-container div.card:nth-child(7) {
+	top:21em;
 
 }
 
@@ -249,22 +297,52 @@ tr.playerViewTr {
 }
 
 .half-card-container {
-	position:inherit;
 	width:100%;
 	position:relative;
 	min-height:2em;
-	margin-top:0.5em;
-	margin-bottom:0.5em;
+	margin-top:1.5em;
+	margin-bottom:2em;
+}
+
+.expansion-card {
+	border-radius: 0px;
+	width: 100%;
+	min-height:2em;
+	margin-top:1em;
+	text-align: center;
+	background-color:#eee;
+	color:#444;
 }
 
 .half-card {
 	width:50%;
 	color:#444;
+	margin-top:0;
+	position:absolute;
+}
+
+.half-card-test {
+	width:50%;
+	color:#444;
+	margin-top:0;
+	position:relative;
 	float:left;
+	height:3em;
+	line-height: 3em;
+	border-top: 1px solid #CCCCCC;
+}
+
+.half-card-test:first-child, .half-card-test:nth-child(2) {
+	border-top:none;
+}
+
+.half-card-test:nth-child(odd) {
+	border-right: 1px solid #CCCCCC;
 }
 
 .half-card-right {
 	border-radius: 0 0.2em 0.2em 0;
+	right:0;
 }
 
 .half-card-left {

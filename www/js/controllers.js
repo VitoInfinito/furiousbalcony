@@ -351,7 +351,6 @@ angular.module('starter.controllers', [])
         }
         //console.info($scope.currentPlayer + " " + $scope.currentPlayer.isReadyToSeeWinningCard + " " + !$scope.currentPlayer.hasSeenWinningRound + " " + !startedWatchingEndingOfRound);
         if($scope.currentPlayer && $scope.currentPlayer.isReadyToSeeWinningCard && !$scope.currentPlayer.hasSeenWinningRound && !startedWatchingEndingOfRound) {
-         // alert("yaman");
           startedWatchingEndingOfRound = true;
           countDownNextRound(10);
         }
@@ -364,12 +363,6 @@ angular.module('starter.controllers', [])
 
         $scope.game = game;
         if(debug) console.info(game);
-
-        if(game.isReadyForReview && $scope.countDown <= 0) {
-          //$scope.selectedCard = null;
-          //$scope.sentCard = null;
-          //countDownNextRound(10);
-        }
       }
     };
 
@@ -384,6 +377,7 @@ angular.module('starter.controllers', [])
     var initGameSocket = function() {
       socket.removeListener('gameAdded');
       socket.removeListener('updateGame');
+
       socket.on('updateGame', function(game) {
         if(debug) console.info('updateGame');
         $scope.$apply(function() {
@@ -438,7 +432,7 @@ angular.module('starter.controllers', [])
     var countDownNextRound = function(timeLeft) {
       $scope.countDown = timeLeft;
       if(--$scope.countDown > 0) {
-        if($scope.game && !$scope.game.isOver) {
+        if($scope.game && !$scope.game.winnerId) {
           countDownTimer = setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
         }else {
           gameWasOver = true;

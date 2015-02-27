@@ -126,20 +126,20 @@
 		</div>
 
 
-
-		<div id="card-container" ng-show="showExpansionsChoice()">
-			<div class="half-card-container">
-				<div class="card half-card half-card-left selectedCard">Selected</div>
-				<div class="card half-card half-card-right text-float-right">Not Selected</div>
-			</div>
-			<div class="card" ng-repeat="exp in expansions" ng-click="exp.chosen = !exp.chosen" ng-class="{selectedCard: exp.chosen}">
+		<div class="half-card-container" ng-show="showExpansionsChoice()">
+			<div class="expansion-card half-card-test selectedCard">Selected</div>
+			<div class="expansion-card half-card-test">Not Selected</div>
+		</div>
+		<div class="half-card-container" ng-show="showExpansionsChoice()">
+			
+			<div class="expansion-card half-card-test" ng-repeat="exp in expansions" ng-click="exp.chosen = !exp.chosen" ng-class="{selectedCard: exp.chosen}">
 				{{exp.name}}
 			</div>
 		</div>
 
 		<div id="card-container" ng-show="showCardBox()">
 			<div class="card white-card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
-				{{card}}
+				<span>{{card}}</span>
 			</div>
 		</div>
 

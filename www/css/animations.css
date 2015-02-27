@@ -50,16 +50,19 @@
 @keyframes showNotification {
   0% {
     /*box-shadow: 0 0 3pt 2pt #ccccff;*/
-    background-color:#FF0000;
+    background-color:crimson;
+    color: #DDDDDD;
   }
 
   90% {
-    background-color:#FF0000;
+    background-color:crimson;
+    color: #DDDDDD;
   }
 
   100% {
     box-shadow:none;
     background-color:default;
+    color: default;
   }
 }
 
