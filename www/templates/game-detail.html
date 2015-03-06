@@ -1,9 +1,23 @@
 <ion-view title="{{game.name}}">
 	<ion-content has-header="true" padding="true">
+		<ion-nav-buttons side="right">
+			<button class="button icon ion-chatbubble" ng-hide="chat.unreadMsg" ng-click="chat.toggleChat()"></button>
+			<button class="button icon ion-chatbubble-working unreadMsg" ng-show="chat.unreadMsg" ng-click="chat.toggleChat()"></button>
+	    </ion-nav-buttons>
 
+	    <ion-scroll id="chat-window" ng-show="chat.openedChat">
+		    <ion-scroll id="chat-window-msgs" delegate-handle="chat">
+		    	<div ng-repeat="chatMsg in game.chat">
+		    		{{chatMsg.sender}}: {{chatMsg.msg}}
+		    	</div>
+		    	
 
-
-
+		    </ion-scroll>
+		    <div id="chat-window-write">
+		    	<input ng-model="chat.msgWindow" type="text" ng-enter="chat.sendMsg()" placeholder="Enter message">
+		    	<div class="ion-chevron-right" ng-click="chat.sendMsg()"></div>
+		    </div>
+		</ion-scroll>
 
 
 		<table id="playerViewTable">
@@ -101,7 +115,11 @@
 			Game is over and player {{game.winnerId}} won the game
 		</div>
 
-		<div class="fb-basic fb-button fb-name-button" ng-show="watchRoundEnd()" ng-click="endRound()">
+		<div class="notification" ng-show="notificationGameIsOver() && hasGameStarted()">
+			Game has been restarted, press Skip review to continue
+		</div>
+
+		<div class="fb-basic fb-button fb-name-button" ng-show="showSkipReview()" ng-click="endRound()">
 			Skip review
 		</div>
 
@@ -115,8 +133,8 @@
 		</div>-->
 
 		<div id="card-container" ng-show="notificationGameIsOver()">
-			<div class="card" ng-repeat="round in game.history">
-				Round {{$index+1}}, {{round.winner}} won with the black card {{round.black}} for the white card {{round.white}}
+			<div class="relative-card" ng-repeat="round in game.history">
+				Round {{$index+1}}, {{round.winner}} won the black card {{round.black}} with the white card {{round.white}}
 			</div>
 		</div>
 
@@ -127,37 +145,37 @@
 
 
 		<div class="half-card-container" ng-show="showExpansionsChoice()">
-			<div class="expansion-card half-card-test selectedCard">Selected</div>
-			<div class="expansion-card half-card-test">Not Selected</div>
+			<div class="half-card-test selectedCard">Selected</div>
+			<div class="half-card-test">Not Selected</div>
 		</div>
 		<div class="half-card-container" ng-show="showExpansionsChoice()">
 			
-			<div class="expansion-card half-card-test" ng-repeat="exp in expansions" ng-click="exp.chosen = !exp.chosen" ng-class="{selectedCard: exp.chosen}">
+			<div class="half-card-test" ng-repeat="exp in expansions" ng-click="exp.chosen = !exp.chosen" ng-class="{selectedCard: exp.chosen}">
 				{{exp.name}}
 			</div>
 		</div>
 
-		<div id="card-container" ng-show="showCardBox()">
+		<div class="card-container" ng-show="showCardBox()">
 			<div class="card white-card" ng-repeat="card in currentPlayer.cards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
 				<span>{{card}}</span>
 			</div>
 		</div>
 
-		<div id="card-container" ng-show="showCzarCardBox()">
+		<div class="card-container" ng-show="showCzarCardBox()">
 			<div class="card" ng-repeat="card in game.chosenWhiteCards" ng-click="selectCard(card)" ng-class="{clickedCard: card === selectedCard, selectedCard: card === sentCard}">
-				{{card}}
+				<span>{{card}}</span>
 			</div>
 		</div>
 
-		<div id="card-container" ng-show="watchRoundEnd()">
+		<div class="card-container" ng-show="watchRoundEnd()">
 			<div class="card" ng-repeat="card in game.reviewWhiteCards" ng-class="{selectedCard: card === game.history[game.history.length-1].white}">
-				{{card}}
+				<span>{{card}}</span>
 			</div>
 		</div>
 
-		<div id="card-container" ng-show="showReviewCardBox()">
+		<div class="card-container" ng-show="showReviewCardBox()">
 			<div class="card" ng-repeat="card in game.chosenWhiteCards" ng-class="{selectedCard: card === game.winningCardId}">
-				{{card}}
+				<span>{{card}}</span>
 			</div>
 		</div>
 

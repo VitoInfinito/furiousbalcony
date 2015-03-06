@@ -11,6 +11,10 @@
 	color: #fff;
 }
 
+.scroll{
+	min-height: 100%;
+}
+
 .scrollable-night {
 	background-color: #444;
 }
@@ -35,13 +39,75 @@ a:visited {
 	color: #666;
 }
 
-
-
 #info-display {
 	position:fixed;
 	width:100%;
 	height:100%;
 }
+
+#chat-window {
+	position: fixed;
+	z-index:3;
+	top:0;
+	left:0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(66,66,66,0.95);
+}
+
+#chat-window-msgs {
+	top:0;
+	left:0;
+	height:calc(100% - 3em);
+	width:100%;
+	position:fixed;
+}
+
+#chat-window-msgs div{
+	color:#dddddd;
+	margin-left:0.2em;
+	margin-top:0.2em;
+}
+
+#chat-window-write {
+	position:fixed;
+	bottom:0;
+	left:0;
+	height:3em;
+	width:100%;
+	background-color:#fff;
+}
+
+#chat-window-write input {
+	font-size: 1em;
+	height: 100%;
+	width:calc(100% - 3em);
+	color:#fff;
+	background-color: #222;
+	padding: 0em 1em;
+	position:relative;
+	float:left;
+	border:none;
+}
+
+#chat-window-write div {
+	position:relative;
+	float:left;
+	height:100%;
+	font-size:1.5em;
+	width:2em;
+	line-height: 1.92em;
+	padding-left:0.15em;
+	color:#dddddd;
+	text-align: center;
+	background-color:#222;
+	border-radius: 0em;
+}
+
+.unreadMsg {
+	color:#FF7519 !important;
+}
+
 
 .text-night {
 	color:#ccc;
@@ -231,7 +297,7 @@ tr.playerViewTr {
 	background-color: #FFCC00;
 }
 
-#card-container{
+.card-container{
 	margin-top:1em;
 	position:relative;
 
@@ -239,9 +305,9 @@ tr.playerViewTr {
 
 
 
-div#card-container div.card {
+div.card-container div.card {
 	position:absolute;
-	height:2.2em;
+	height:3.2em;
 	display:table;
 }
 
@@ -250,38 +316,36 @@ div.card span {
 	vertical-align: middle;
 }
 
-div#card-container div.card:first-child {
+div.card-container div.card:first-child {
 	top:0;
 }
 
-div#card-container div.card:nth-child(2) {
-	top:3.5em;
-
+div.card-container div.card:nth-child(2) {
+	top:4em;
 }
 
-div#card-container div.card:nth-child(3) {
-	top:7em;
-
+div.card-container div.card:nth-child(3) {
+	top:8em;
 }
 
-div#card-container div.card:nth-child(4) {
-	top:10.5em;
-
+div.card-container div.card:nth-child(4) {
+	top:12em;
 }
 
-div#card-container div.card:nth-child(5) {
-	top:14em;
-
+div.card-container div.card:nth-child(5) {
+	top:16em;
 }
 
-div#card-container div.card:nth-child(6) {
-	top:17.5em;
-
+div.card-container div.card:nth-child(6) {
+	top:20em;
 }
 
-div#card-container div.card:nth-child(7) {
-	top:21em;
+div.card-container div.card:nth-child(7) {
+	top:24em;
+}
 
+div.card-container div.card:nth-child(8) {
+	top:28em;
 }
 
 .card, .notification {
@@ -304,7 +368,7 @@ div#card-container div.card:nth-child(7) {
 	margin-bottom:2em;
 }
 
-.expansion-card {
+.relative-card {
 	border-radius: 0px;
 	width: 100%;
 	min-height:2em;
@@ -323,6 +387,8 @@ div#card-container div.card:nth-child(7) {
 
 .half-card-test {
 	width:50%;
+	text-align: center;
+	background-color:#eee;
 	color:#444;
 	margin-top:0;
 	position:relative;
