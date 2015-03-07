@@ -94,7 +94,7 @@ function kickAllPlayersInGameWithId(gameId) {
 };
 
 function initServer() {
-	checkIfGamesAreAbandoned(360000);
+	checkIfGamesAreAbandoned(1800000);
 };
 
 
@@ -184,7 +184,7 @@ app.get('/listgamesandinfo', function(req, res) {
 	var ag = Game.getAvailableGamesForUser(req.query.id));*/
 	var gameListInfo = Game.getFullGameListForUser(req.query.id);
 	if(!isNaN(req.query.version) && parseInt(req.query.version) === version) {
-		res.json({usersGames: gameListInfo.ug, availableGames: gameListInfo.ag, connectedUsers: socketCount, startedGames: gameListInfo.sg}); 
+		res.json({usersGames: gameListInfo.ug, availableGames: gameListInfo.ag, connectedUsers: socketCount, startedGames: gameListInfo.sg, registeredUsernames: gameListInfo.ru}); 
 	}else {
 		res.json("please dont"); 
 	}

@@ -95,8 +95,8 @@ function isPlayerPartOfGame(gameId, playerId) {
 	return false;
 };
 
-function getPlayerOfGame(gameId, playerId) {
-	var game = getGame(gameId);
+function getPlayerOfGame(game, playerId) {
+	//var game = getGame(gameId);
 	if(game) {
 		return _.find(game.players, function(x) { return x.id === playerId});
 	}
@@ -113,22 +113,33 @@ function setPlayerAmount(gameId, amount) {
 function getPlayerStates(game) {
 	if(game) {
 		var playerStates = [];
-
 		for(var i=0; i<game.players.length; i++) {
 			var playerId = game.players[i].id;
-			if((gameCanStart(game) && game.players[i].id === game.isOwner) || 
-				(game.isStarted && !game.players[i].hasSeenWinningRound)) {
-				//Add more ifs
-
-				playerStates.push({playerId: "active"});
-			}else {
-				playerStates.push({playerId: "passive"});
-			}
+			playerStates.push({playerId: getActualState(game, game.players[i])});
 		}
 		return playerStates;
 	}
 	return null;
 };
+
+function getActualState(game, user) {
+	if(game && user) {
+		if((gameCanStart(game) && user.id === game.isOwner) || 
+				(game.isStarted && (!user.hasSeenWinningRound || 
+					(!user.selectedWhiteCardId && !user.isCzar) || 
+					(user.isCzar && game.isReadyForScoring)))) {
+				//Add more ifs
+			return "active";
+		}else {
+			return "passive";
+		}
+	}
+	return null;
+}
+
+function getActualStateOfUserId(game, userId) {
+	return getActualState(game, getPlayerOfGame(game, userId))
+}
 
 
 /** Game list utility **/
@@ -156,9 +167,10 @@ function toInfo(fullGameList) {
 	});
 };
 
-function toInfoWithStates(fullGameList) {
+function toInfoWithStateForUser(fullGameList, userId) {
 	return _.map(fullGameList, function(game) {
-		return { id: game.id, name: game.name, players: game.players.length, playerStates: getPlayerStates(game) };
+		var state = getActualStateOfUserId(game, userId);
+		return { id: game.id, name: game.name, players: game.players.length, playerState: state };
 	});
 };
 
@@ -185,7 +197,7 @@ function getGamesUserIsIn(userId) {
 			if(gameList[i].players[j].id === userId) games.push(gameList[i]);
 		}
 	}
-	return toInfoWithStates(games);
+	return toInfoWithStateForUser(games, userId);
 };
 
 function getAvailableGamesForUser(userId) {
@@ -227,10 +239,10 @@ function getFullGameListForUser(userId) {
 		}
     }
 
-    availableGames = toInfoWithStates(availableGames);
-    usersGames = toInfo(usersGames);
+    availableGames = toInfo(availableGames);
+    usersGames = toInfoWithStateForUser(usersGames, userId);
 
-    return {ag: availableGames, ug: usersGames, sg: startedGames};
+    return {ag: availableGames, ug: usersGames, sg: startedGames, ru: usernamesTaken.length};
 
 }
 
@@ -499,11 +511,11 @@ function getPlayerByCardId(gameId, cardId) {
 };
 
 function selectCard(gameId, playerId, card) {
-	var player = getPlayerOfGame(gameId, playerId);
+	var game = getGame(gameId);
+	var player = getPlayerOfGame(game, playerId);
 	if(player && !player.selectedWhiteCardId) {
 		player.selectedWhiteCardId = card;
 		player.isReady = false;
-		var game = getGame(gameId);
 		if(game) {
 			game.chosenWhiteCards.push(card);
 			var readyPlayers = _.filter(game.players, function (x) {
@@ -519,10 +531,13 @@ function selectCard(gameId, playerId, card) {
 };
 
 function sawWinningRound(gameId, playerId) {
-	var player = getPlayerOfGame(gameId, playerId);
-	if(player) {
-		player.hasSeenWinningRound = true;
-		player.isReadyToSeeWinningCard = false;
+	var game = getGame(gameId);
+	if(game) {
+		var player = getPlayerOfGame(game, playerId);
+		if(player) {
+			player.hasSeenWinningRound = true;
+			player.isReadyToSeeWinningCard = false;
+		}
 	}
 };
 
@@ -585,7 +600,7 @@ function addChatMsgToGame(gameId, senderId, msgReceived) {
 
 function seenLastMsgInGame(gameId, playerId) {
 	var game = getGame(gameId);
-	var user = getPlayerOfGame(gameId, playerId);
+	var user = getPlayerOfGame(game, playerId);
 	if(game && user) {
 		user.unreadMsg = false;
 	}

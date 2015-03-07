@@ -194,6 +194,9 @@ angular.module('starter.controllers', [])
 .controller('GamesCtrl', function($scope, $location, Games) {
 
 
+  $scope.connectedUsers = 0;
+  $scope.startedGames = 0;
+  $scope.registeredUsernames = 0;
   $scope.usersGames = [];
   var sortAvailableGamesList = function(gameList) {
     if($scope.availableGames) {
@@ -223,6 +226,7 @@ angular.module('starter.controllers', [])
     });
   };
 
+  $scope.showGlobalInfo = false;
 	$scope.reload = function() {
     //Fetching list with users own games
     /*Games.fetchUsersGames()
@@ -246,7 +250,8 @@ angular.module('starter.controllers', [])
         $scope.availableGames = success.data.availableGames;
         $scope.connectedUsers = success.data.connectedUsers;
         $scope.startedGames = success.data.startedGames;
-        console.info(success.data);
+        $scope.registeredUsernames = success.data.registeredUsernames;
+        if(debug) console.info(success.data);
       });
 	};
 
@@ -292,6 +297,7 @@ angular.module('starter.controllers', [])
 
 
     var update = function(game) {
+      $scope.game = game;
       $scope.chosenWhiteCards = [];
       if(game) {
         //Sorting all players
@@ -311,7 +317,7 @@ angular.module('starter.controllers', [])
           }
         }
 
-        $scope.game = game;
+        
         if(debug) console.info(game);
       }
     };
@@ -346,6 +352,7 @@ angular.module('starter.controllers', [])
           if($scope.game) $scope.game.chat = data;
           if($scope.chat.openedChat) {
             $ionicScrollDelegate.$getByHandle('chat').scrollBottom();
+            $ionicScrollDelegate.$getByHandle('background').scrollTop();
             socket.emit('seenLastMsg', { gameId: $stateParams.gameId, playerId: Game.getUserId() });
           }else {
             $scope.chat.unreadMsg = true;
@@ -436,6 +443,7 @@ angular.module('starter.controllers', [])
       toggleChat: function() {
         $scope.chat.openedChat = !$scope.chat.openedChat;
         $ionicScrollDelegate.$getByHandle('chat').scrollBottom();
+        $ionicScrollDelegate.$getByHandle('background').scrollTop();
         if($scope.chat.unreadMsg) {
           $scope.chat.unreadMsg = false;
           socket.emit('seenLastMsg', { gameId: $stateParams.gameId, playerId: Game.getUserId() });
@@ -591,11 +599,11 @@ angular.module('starter.controllers', [])
 
     $scope.watchRoundEnd = function() {
       return startedWatchingEndingOfRound && $scope.game && !$scope.game.isOver && $scope.game.roundAmount > 0;
-    }
+    };
 
     $scope.showSkipReview = function() {
       return startedWatchingEndingOfRound;
-    }
+    };
 
     $scope.showReviewCardBox = function() {
       return !startedWatchingEndingOfRound && $scope.currentPlayer && $scope.game.isStarted && (/*startedWatchingEndingOfRound || */(!$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring));
