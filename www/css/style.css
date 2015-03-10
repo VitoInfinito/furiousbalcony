@@ -82,6 +82,24 @@ a:visited {
 	color:#dddddd;
 	margin-left:0.2em;
 	margin-top:0.2em;
+	margin-right:0.4em;
+
+}
+
+#chat-window-msgs div:first-child {
+	padding-top: 0.2em;
+}
+
+#chat-window-msgs div span:first-child:after {
+	content: " | ";
+}
+
+#chat-window-msgs .senderName {
+	color:#FF0066;
+}
+
+#chat-window-msgs .ownMsg {
+	color:#FFCC00;
 }
 
 #chat-window-write {

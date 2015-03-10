@@ -82,6 +82,10 @@ angular.module('starter.controllers', [])
     }
   };
 
+  $scope.goToGameList = function() {
+    alert("swipe");
+  }
+
   $scope.lockdown = false;
   var checkConnection = function() {
     SettingsService.checkConnection()

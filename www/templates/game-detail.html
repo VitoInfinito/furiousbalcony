@@ -8,7 +8,7 @@
 	    <ion-scroll id="chat-window" ng-show="chat.openedChat">
 		    <ion-scroll id="chat-window-msgs" delegate-handle="chat">
 		    	<div ng-repeat="chatMsg in game.chat">
-		    		{{chatMsg.sender}}: {{chatMsg.msg}}
+		    		<span class="senderName" ng-class="{ownMsg: chatMsg.sender === currentPlayer.name}">{{chatMsg.sender}}</span><span>{{chatMsg.msg}}</span>
 		    	</div>
 		    	
 
