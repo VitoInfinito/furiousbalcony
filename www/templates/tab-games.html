@@ -22,8 +22,8 @@
 
 
 		<div class="game-menu-toggle-item" ng-click="gameList.user = !gameList.user">
-			<div class="gameListItem">Games you are in</div>
-			<div class="gameListItem">
+			<div class="gameListItem tabTitle">Games you are in</div>
+			<div class="gameListItem tabChevron">
 				<div ng-hide="gameList.user" class="text-float-right ion-chevron-up"></div>
 				<div ng-show="gameList.user" class="text-float-right ion-chevron-down"></div>
 			</div>
@@ -40,8 +40,8 @@
 
 	    
 	    <div class="game-menu-toggle-item" ng-click="gameList.rest = !gameList.rest">
-			<div class="gameListItem">Games you can join</div>
-			<div class="gameListItem">
+			<div class="gameListItem tabTitle">Games you can join</div>
+			<div class="gameListItem tabChevron">
 				<div ng-hide="gameList.rest" class="text-float-right ion-chevron-up"></div>
 				<div ng-show="gameList.rest" class="text-float-right ion-chevron-down"></div>
 			</div>

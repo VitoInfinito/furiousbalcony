@@ -137,6 +137,11 @@ a:visited {
 	border-radius: 0em;
 }
 
+.containToBottom {
+	position: absolute;
+	bottom: 0;
+}
+
 .unreadMsg {
 	color:#FF7519 !important;
 }
@@ -260,6 +265,14 @@ a:visited {
 .gameListItem {
 	width:40%;
 	float:left;
+}
+
+.tabTitle {
+	width:80%;
+}
+
+.tabChevron {
+	width: 20%;
 }
 
 .closeButton {

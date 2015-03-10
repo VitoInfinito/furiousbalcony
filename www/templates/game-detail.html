@@ -1,23 +1,24 @@
 <ion-view title="{{game.name}}">
-	<ion-content has-header="true" padding="true" delegate-handle="background">
+	<ion-content has-header="true" padding="true" delegate-handle="background" overflow-scroll="true">
 		<ion-nav-buttons side="right">
 			<button class="button icon ion-chatbubble" ng-hide="chat.unreadMsg" ng-click="chat.toggleChat()"></button>
 			<button class="button icon ion-chatbubble-working unreadMsg" ng-show="chat.unreadMsg" ng-click="chat.toggleChat()"></button>
 	    </ion-nav-buttons>
 
-	    <ion-scroll id="chat-window" ng-show="chat.openedChat">
+	    <div id="chat-window" ng-show="chat.openedChat">
 		    <ion-scroll id="chat-window-msgs" delegate-handle="chat">
-		    	<div ng-repeat="chatMsg in game.chat">
-		    		<span class="senderName" ng-class="{ownMsg: chatMsg.sender === currentPlayer.name}">{{chatMsg.sender}}</span><span>{{chatMsg.msg}}</span>
-		    	</div>
-		    	
+			    <div class="containToBottom">
+			    	<div ng-repeat="chatMsg in game.chat">
+			    		<span class="senderName" ng-class="{ownMsg: chatMsg.sender === currentPlayer.name}">{{chatMsg.sender}}</span><span>{{chatMsg.msg}}</span>
+			    	</div>
+			    </div>
 
 		    </ion-scroll>
 		    <div id="chat-window-write">
 		    	<input ng-model="chat.msgWindow" type="text" ng-enter="chat.sendMsg()" placeholder="Enter message">
 		    	<div class="ion-chevron-right" ng-click="chat.sendMsg()"></div>
 		    </div>
-		</ion-scroll>
+		</div>
 
 
 		<table id="playerViewTable">

@@ -269,15 +269,20 @@ function addUsername(username, userId) {
 	var games = getFullGameListUserIsIn(userId);
 	console.log("Adding username " + username + " with id " + userId);
 	if(existingUser && typeof existingUser !== 'undefined') {
-		existingUser.name = username;
         for(i=0; i<games.length; i++) {
 			for(j=0; j<games[i].players.length; j++) {
 				if(games[i].players[j].id === userId) {
 					games[i].players[j].name = username;
+					for(k=0; k<games[i].chat.length; k++) {
+						if(games[i].chat[k].sender === existingUser.name) {
+							games[i].chat[k].sender = username;
+						}
+					}
 					break;
 				}
 			}
 		}
+		existingUser.name = username;
     }else {
 		usernamesTaken.push({name: username, id: userId});
 	}
