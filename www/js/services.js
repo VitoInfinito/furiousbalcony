@@ -2,7 +2,7 @@ var http = "http://lethe.se:10600";
 //var http = 'http://127.0.0.1:10600';
 var user = Object();
 var socket;
-var version = '3';
+var version = '4';
 
 angular.module('starter.services', [])
 
@@ -14,9 +14,6 @@ angular.module('starter.services', [])
     var games = [];
 
     return {
-      fetchGames: function() {
-          return $http.get(http + '/list');
-      },
       fetchGame: function(gameId) {
         return $http.get(http + '/getgamebyid?id=' + gameId);
       },
@@ -32,8 +29,14 @@ angular.module('starter.services', [])
       fetchAvailableGames: function() {
         return $http.get(http + '/listavailablegames?id=' + user.id);
       },
+      fetchGames: function() {
+          return $http.get(http + '/listgamesandinfo?id=' + user.id + "&version=" + version);
+      },
       get: function(gameId) {
         return games[gameId];
+      },
+      getUserOfId: function(userId) {
+        return $http.get(http + '/getuserofid?id=' + userId);
       },
       createGame: function() {
         return $http.post(http + '/addGame', { name: user.name + "'s game", isOwner: user.id });
@@ -127,6 +130,10 @@ angular.module('starter.services', [])
       },
       getClientVersion: function() {
         return version;
+      },
+      ioConnection: function() {
+        socket = io.connect(http + '/');
+        return socket;
       }
 
     }

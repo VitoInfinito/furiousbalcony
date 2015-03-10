@@ -3,14 +3,14 @@ var app = express();
 var server = app.listen(10600, function() {
         var host = server.address().address;
         var port = server.address().port;
-        console.log('Furious Balcony Server running at http://%s:%s', host, port);
+        console.log('Icy Balcony Server running at http://%s:%s', host, port);
 });
 var bodyParser = require('body-parser');
 var io = require('socket.io').listen(server);
 var socketCount = 0;
 var Game = require('./game.js');
 var players = {};
-var version = 3;
+var version = 4;
 var versionMessage = "Please download the latest updates for a better experience.";
 var outdatedMessage = "You have to download the latest updates to be able to continue.";
 var motd = "DISCLAIMER: Due to lack of servers we can currently not assure that a connection to a server can always be established. Server restarts and resets may occur daily.";
@@ -57,11 +57,14 @@ function checkIfGamesAreAbandoned(timeoutTime) {
 	console.log("Checking for abandoned games at time " + currentTime);
 	var games = Game.listTimestamp();
 
+	if(games)
+		console.log("The gamelist contains " + games.length + " games");
+
 	for(i=0; i<games.length; i++) {
-		if(games[i].createdAt.getTime() + 1800000 < currentTime.getTime() && !games[i].isStarted) {
+		if(games[i].createdAt.getTime() + timeoutTime < currentTime.getTime() && !games[i].isStarted) {
 			console.log('*')
 			console.log(games[i].name + " was created at " + games[i].createdAt + " and is now considered abandoned. Shutting game down");
-			console.log('*')
+			console.log('* ' + i)
 			kickAllPlayersInGameWithId(games[i].id);
 		}
 	}
@@ -74,17 +77,20 @@ function checkIfGamesAreAbandoned(timeoutTime) {
 
 function kickAllPlayersInGameWithId(gameId) {
 	var game = Game.getGame(gameId);
-	var players = [];
-	//Creating list with users in order to kick everyone without bugs
-	for(i=0; i<game.players.length; i++) {
-		players.push(game.players[i].id);
-	}
+	if(game) {
+		var players = [];
+		//Creating list with users in order to kick everyone without bugs
+		for(i=0; i<game.players.length; i++) {
+			players.push(game.players[i].id);
+		}
 
+		for(j=0; j<players.length; j++) {
+			Game.leaveGame(game.id, players[j]);
+			io.to(game.id).emit('kickPlayer', { kickedPlayer : players[j], game: gameViewModel(game.id) });
+		}
 
-	for(j=0; j<players.length; j++) {
-		Game.leaveGame(game.id, players[j]);
-		io.to(game.id).emit('kickPlayer', { kickedPlayer : players[j], game: gameViewModel(game.id) });
-	}
+		io.to('lobbyRoom').emit('gameAdded', Game.list());
+}
 };
 
 function initServer() {
@@ -94,27 +100,22 @@ function initServer() {
 
 io.sockets.on('connection', function(socket) {
 	socketCount += 1;
-	//console.log('User connect, socketcount: ' + socketCount);
+	console.log('User connect, socketcount: ' + socketCount);
 	socket.join('lobbyRoom');
 
 	socket.on('connectToGame', function(data) {
 		var game = Game.getGame(data.gameId);
 		if(game) {
  			if(socket.gameId != game.id) {
-				if(socket.userName)
-					console.log('User ' + socket.userName + ' is connecting to ' + Game.getNameOfGame(data.gameId));
-				//Making sure user only gets updates from one game at a time.
+				//if(socket.userName)
+					//console.log('User ' + socket.userName + ' is connecting to ' + Game.getNameOfGame(data.gameId));
+				//Making sure user only gets updates from one game at a time by leaving possible other games user was in.
 				socket.leave(socket.gameId);
 				socket.join(data.gameId);
 				socket.gameId = game.id;
 				//broadcastGame(data.gameId);
 			}
 			broadcastGame(data.gameId);
-		} else {
-			//console.log("before error");
-			//TODO fix error emits
-			//socket.emit('error', 'Invalid Game ID');
-			//console.log("after error");
 		}
 	});
 
@@ -132,15 +133,27 @@ io.sockets.on('connection', function(socket) {
 	socket.on('kickPlayer', function(data) {
 		//Add more checks for if user that is kicking is the owner of the game
 		var user = Game.getUserOfId(data.playerId);
-		if(user)
-			console.log("Kicking " + user.name + " from " + Game.getNameOfGame(data.gameId));
+		if(user) console.log("Kicking " + user.name + " from " + Game.getNameOfGame(data.gameId));
 		Game.leaveGame(data.gameId, data.playerId);
 		io.to(data.gameId).emit('kickPlayer', { kickedPlayer : data.playerId, game: gameViewModel(data.gameId) });
-	});	
+	});
+
+	socket.on('sendMsgToRoom', function(data) {
+		if(data.gameId && data.playerId) {
+			var msgs = Game.addChatMsgToGame(data.gameId, data.playerId, data.chatMsg)
+			if(msgs) io.to(data.gameId).emit('receivedMsg', msgs);
+		}
+	});
+
+	socket.on('seenLastMsg', function(data) {
+		if(data.gameId && data.playerId) {
+			Game.seenLastMsgInGame(data.gameId, data.playerId);
+		}
+	});
 
 	socket.on('disconnect', function() {
 		socketCount -= 1;
-		//console.log('User disconnect, socketcount: ' + socketCount);
+		console.log('User disconnect, socketcount: ' + socketCount);
 		if(socket.playerId && socket.gameId) {
 			console.log('socket disconnect ' + socket.playerId);
 			//delete players[socket.gameId][socket.playerId];
@@ -162,9 +175,22 @@ io.sockets.on('connection', function(socket) {
 });
 		
 app.get('/list', function(req, res) { res.json(Game.list()); });
+app.get('/fullList', function(req, res) { res.json(Game.listAllWithAllInfo()); });
 app.get('/listExpansions', function(req, res) { res.json(Game.getExpansions()); });
 app.get('/listusersgames', function(req, res) { res.json(Game.getGamesUserIsIn(req.query.id)); });
 app.get('/listavailablegames', function(req, res) { res.json(Game.getAvailableGamesForUser(req.query.id)); });
+app.get('/listgamesandinfo', function(req, res) { 
+	/*var ug = Game.getGamesUserIsIn(req.query.id));
+	var ag = Game.getAvailableGamesForUser(req.query.id));*/
+	var gameListInfo = Game.getFullGameListForUser(req.query.id);
+	if(!isNaN(req.query.version) && parseInt(req.query.version) === version) {
+		res.json({usersGames: gameListInfo.ug, availableGames: gameListInfo.ag, connectedUsers: socketCount, startedGames: gameListInfo.sg, registeredUsernames: gameListInfo.ru}); 
+	}else {
+		res.json("please dont"); 
+	}
+	
+});
+
 app.get('/checkConnection', function(req, res) { 
 	if(req.query.version) {	
 		if(isNaN(req.query.version) || parseInt(req.query.version) > version) {
@@ -186,7 +212,6 @@ app.get('/checkConnection', function(req, res) {
 });
 app.get('/checkName', function(req, res) {	
 	if(!Game.checkIfNameTaken(req.query.name)) {
-		console.log("Adding username " + req.query.name);
 		Game.addUsername(req.query.name, req.query.id);
 		var games = Game.getGamesUserIsIn(req.query.id);
 		for(i=0; i<games.length; i++) {
@@ -235,6 +260,10 @@ app.post('/joingame', function(req, res) {
 		return null;
 	}
 
+	var user = Game.getUserOfId(req.body.playerId);
+	if(user) 
+		console.log('User ' + user.name + ' is joining ' + game.name);
+	
 	game = Game.joinGame(game, { id: req.body.playerId, name: req.body.playerName });
 
 	returnGame(req.body.gameId, res);

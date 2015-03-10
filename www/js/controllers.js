@@ -1,14 +1,11 @@
-var http = 'http://lethe.se:10600';
-//var http = 'http://127.0.0.1:10600';
 var hasUsername = false;
 var socket;
-var nightmode = false;
-var storingCapability = false;
 var debug = false;
 
 angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($rootScope, $scope, SettingsService) {
+  var storingCapability = false;
 
   var setStatusText = function(msg) {
     //TODO Toast (popup message that fades away)
@@ -21,7 +18,7 @@ angular.module('starter.controllers', [])
   };
 
   var initSocket = function() {
-      socket = io.connect(http + '/');
+      socket = SettingsService.ioConnection();
 
       socket.emit('addUserInformation', { userId: SettingsService.getId(), userName: SettingsService.getName(), clientVersion: SettingsService.getClientVersion() });
 
@@ -58,6 +55,37 @@ angular.module('starter.controllers', [])
             });
   };
 
+  var checkStoredId = function() {
+    if(storingCapability) {
+      if($scope.dash.connected) {
+        if(localStorage.userId) {
+          SettingsService.getUserOfId(localStorage.userId)
+            .then(function(success) {
+                if(success.data !== 'noexist') {
+                  SettingsService.setupUserId(success.data.id);
+                  setNameLocally(success.data.name);
+                  initSocket();
+                }else {
+                  SettingsService.setupNewUserId();
+                }
+            },
+            function(error) {
+              $scope.dash.connected = false;
+              checkConnection();
+            });
+        }else {
+          SettingsService.setupNewUserId();
+        }
+      }else {
+        checkConnection();
+      }
+    }
+  };
+/*
+  $scope.goToGameList = function() {
+    alert("swipe");
+  }*/
+
   $scope.lockdown = false;
   var checkConnection = function() {
     SettingsService.checkConnection()
@@ -86,33 +114,6 @@ angular.module('starter.controllers', [])
       });
   }
 
-  var checkStoredId = function() {
-    if(storingCapability) {
-      if($scope.dash.connected) {
-        if(localStorage.userId) {
-          SettingsService.getUserOfId(localStorage.userId)
-            .then(function(success) {
-                if(success.data !== 'noexist') {
-                  SettingsService.setupUserId(success.data.id);
-                  setNameLocally(success.data.name);
-                  initSocket();
-                }else {
-                  SettingsService.setupNewUserId();
-                }
-            },
-            function(error) {
-              $scope.dash.connected = false;
-              checkConnection();
-            });
-        }else {
-          SettingsService.setupNewUserId();
-        }
-      }else {
-        checkConnection();
-      }
-    }
-  }
-
   $scope.errormsg =  "";
   $scope.dash = {
     checkUsername: function() {
@@ -131,19 +132,6 @@ angular.module('starter.controllers', [])
     hasUsername: false,
     motd: "Trying to connect to the server."
   };
-  
-  $scope.nightmode = function() { return nightmode };
-
-
-  $scope.settings = {
-    nightmodeChecked: false,
-    nightmodeChange: function() {
-        nightmode = $scope.settings.nightmodeChecked;
-        
-    } 
-  };
-
-
 
   if(hasUsername) {
     $scope.dash.hasUsername = true;
@@ -161,10 +149,6 @@ angular.module('starter.controllers', [])
       SettingsService.setupNewUserId();
   }
 
-  //checkStoredId();
-
-
-
 })
 
 .controller('SettingsCtrl', function($scope, SettingsService) {
@@ -179,9 +163,6 @@ angular.module('starter.controllers', [])
         }, 1500);
   };
 
-  socket.removeListener('gameAdded');
-  //$scope.currentName = "yrwq";
-
   var sendNameToServer = function(name) {
     SettingsService.checkAndSetName(name)
         .then(function(success) {
@@ -192,16 +173,9 @@ angular.module('starter.controllers', [])
               setStatusText("Successfully changed username to " + $scope.settings.currentName);
             }
         });
-  }
-
-  $scope.nightmode = function() { return nightmode };
+  };
 
   $scope.settings = {
-    nightmodeChecked: nightmode,
-    nightmodeChange: function() {
-        nightmode = $scope.settings.nightmodeChecked;
-        
-    },
     changeUsername: function() {
       if(!$scope.settings.currentName) {
         setStatusText("Please enter a name");
@@ -217,20 +191,27 @@ angular.module('starter.controllers', [])
     connected : true
   };
 
+  socket.removeListener('gameAdded');
 
 })
 
 .controller('GamesCtrl', function($scope, $location, Games) {
 
+
+  $scope.connectedUsers = 0;
+  $scope.startedGames = 0;
+  $scope.registeredUsernames = 0;
+  $scope.usersGames = [];
   var sortAvailableGamesList = function(gameList) {
     if($scope.availableGames) {
           for(var i=0; i<$scope.usersGames.length; i++) {
-            for(var j=0; j<gameList.length; j++) {
-              if($scope.usersGames[i].id === gameList[j].id){
-                gameList.splice(j, 1);
-                break;
-              } 
-            }
+              for(var j=0; j<gameList.length; j++) {
+                if($scope.usersGames[i].id === gameList[j].id){
+                  //TODO: Making new users game list, solution can still be improved
+                  gameList.splice(j, 1);
+                  break;
+                } 
+              }
           }
         }
 
@@ -238,6 +219,9 @@ angular.module('starter.controllers', [])
   }
 
   var initGameListSocket = function() {
+
+    socket.removeListener('gameAdded');
+
     socket.on('gameAdded', function(gameList) {
       if(debug) console.info('gameAdded');
       $scope.$apply(function() {
@@ -246,27 +230,32 @@ angular.module('starter.controllers', [])
     });
   };
 
+  $scope.showGlobalInfo = false;
 	$scope.reload = function() {
-		Games.fetchGames()
-      .then(function(success) {
-        var games = success.data;
-        if(debug) console.info('fetchGames returned ' + games.length + ' items');
-        $scope.games = games;
-      });
-
-    Games.fetchUsersGames()
+    //Fetching list with users own games
+    /*Games.fetchUsersGames()
       .then(function(success) {
         var usersGames = success.data;
         if(debug) console.info('fetchUsersGames returned ' + usersGames.length + ' items');
         $scope.usersGames = usersGames;
       });
 
-    //Do this the first time to make sure we get the exact list
+    //Fetching list with available games
     Games.fetchAvailableGames()
       .then(function(success) {
         var availableGames = success.data;
         if(debug) console.info('fetchAvailableGames returned ' + availableGames.length + ' items');
         $scope.availableGames = availableGames;
+      });*/
+
+    Games.fetchGames()
+      .then(function(success) {
+        $scope.usersGames = success.data.usersGames;
+        $scope.availableGames = success.data.availableGames;
+        $scope.connectedUsers = success.data.connectedUsers;
+        $scope.startedGames = success.data.startedGames;
+        $scope.registeredUsernames = success.data.registeredUsernames;
+        if(debug) console.info(success.data);
       });
 	};
 
@@ -306,55 +295,41 @@ angular.module('starter.controllers', [])
   
 })
 
-.controller('GameDetailCtrl', function($scope, $stateParams, $location, Game) {
+.controller('GameDetailCtrl', function($scope, $stateParams, $location, $ionicScrollDelegate, Game) {
     var playersPerRow = 4;
+    var gameWasOver = false;
 
 
     var update = function(game) {
+      $scope.game = game;
       $scope.chosenWhiteCards = [];
       if(game) {
+        //Sorting all players
         for(i=0; i<game.players.length; i++) {
           if(game.players[i].id === Game.getUserId()) {
             $scope.currentPlayer = game.players[i];
           }else {
             delete game.players[i].cards;
           }
+        }
 
-          //Need to implement a better solution eventually
-          if(game.isReadyForScoring && !game.players[i].isCzar) {
-            //$scope.chosenWhiteCards.push(game.players[i].selectedWhiteCardId);
-            //delete game.players[i].selectedWhiteCardId;
+        //Checking if player has watched the end of the round
+        if($scope.currentPlayer && $scope.currentPlayer.isReadyToSeeWinningCard && !$scope.currentPlayer.hasSeenWinningRound && !startedWatchingEndingOfRound) {
+          startedWatchingEndingOfRound = true;
+          if(game.roundAmount > 0) {
+            countDownNextRound(10);
           }
         }
-        //console.info($scope.currentPlayer + " " + $scope.currentPlayer.isReadyToSeeWinningCard + " " + !$scope.currentPlayer.hasSeenWinningRound + " " + !startedWatchingEndingOfRound);
-        if($scope.currentPlayer && $scope.currentPlayer.isReadyToSeeWinningCard && !$scope.currentPlayer.hasSeenWinningRound && !startedWatchingEndingOfRound) {
-         // alert("yaman");
-          startedWatchingEndingOfRound = true;
-          countDownNextRound(10);
-        }
 
-        $scope.game = game;
+        
         if(debug) console.info(game);
-
-        if(game.isReadyForReview && $scope.countDown <= 0) {
-          //$scope.selectedCard = null;
-          //$scope.sentCard = null;
-          //countDownNextRound(10);
-        }
       }
     };
-
-    $scope.kickPlayer = function(playerId) {
-    /*Games.kickPlayer($scope.game.id, playerId)
-      .then(function(success) {
-
-      });*/
-      socket.emit('kickPlayer', { gameId: $stateParams.gameId, playerId: playerId });
-  }
 
     var initGameSocket = function() {
       socket.removeListener('gameAdded');
       socket.removeListener('updateGame');
+
       socket.on('updateGame', function(game) {
         if(debug) console.info('updateGame');
         $scope.$apply(function() {
@@ -374,6 +349,20 @@ angular.module('starter.controllers', [])
           update(data.game);
         });
       });
+
+      socket.on('receivedMsg', function(data) {
+        if(debug) console.info('receivedMsg');
+        $scope.$apply(function() {
+          if($scope.game) $scope.game.chat = data;
+          if($scope.chat.openedChat) {
+            $ionicScrollDelegate.$getByHandle('chat').scrollBottom();
+            $ionicScrollDelegate.$getByHandle('background').scrollTop();
+            socket.emit('seenLastMsg', { gameId: $stateParams.gameId, playerId: Game.getUserId() });
+          }else {
+            $scope.chat.unreadMsg = true;
+          }
+        });
+      });
       
       socket.on('gameError', function(errorMsg) {
         $scope.$apply(function() {
@@ -381,9 +370,13 @@ angular.module('starter.controllers', [])
         });
       });
     };
+
+    $scope.kickPlayer = function(playerId) {
+      socket.emit('kickPlayer', { gameId: $stateParams.gameId, playerId: playerId });
+    }
     
     var joinGame = function() {
-      $scope.getGame();
+      //$scope.getGame();
       Game.joinGame($stateParams.gameId, Game.getUserId(), Game.getUserName())
         .then(function(success) {
           if(debug) console.info("joinGame success");
@@ -393,10 +386,18 @@ angular.module('starter.controllers', [])
             $scope.sentCard = $scope.currentPlayer.selectedWhiteCardId;
           }
           initGameSocket();
-          socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId, playerName: Game.playerName });
+          socket.emit('connectToGame', { gameId: $stateParams.gameId, playerId: Game.getUserId(), playerName: Game.getUserName() });
+          
+          //Set notification to true if player has an unread message
+          if($scope.currentPlayer && $scope.currentPlayer.unreadMsg) {
+            $scope.chat.unreadMsg = true;
+          }
       },
       function(error) {
         if(debug) console.info("joinGame error")
+        if(error.data.error === "invalid GameId" || error.data.error === "too many players") {
+          $location.url("/tab/games");
+        }
         $scope.gameError = error.data.error;
       });
     };
@@ -406,7 +407,11 @@ angular.module('starter.controllers', [])
     var countDownNextRound = function(timeLeft) {
       $scope.countDown = timeLeft;
       if(--$scope.countDown > 0) {
-        countDownTimer = setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
+        if($scope.game && !$scope.game.isOver) {
+          countDownTimer = setTimeout(function() {$scope.$apply(function() {countDownNextRound($scope.countDown)});}, 1000);
+        }else {
+          gameWasOver = true;
+        }
       }else {
         sawWinningRound();
       }
@@ -428,9 +433,33 @@ angular.module('starter.controllers', [])
         });
     };
 
+    $scope.chat = {
+      msgWindow: "",
+      sendMsg: function() {
+        //Check if the chat message contains at least one non whitespace character
+        if (/\S/.test($scope.chat.msgWindow)) {
+          socket.emit('sendMsgToRoom', { gameId: $stateParams.gameId, playerId: Game.getUserId(), chatMsg: $scope.chat.msgWindow });
+        }
+
+        $scope.chat.msgWindow = "";
+      },
+      openedChat: false,
+      toggleChat: function() {
+        $scope.chat.openedChat = !$scope.chat.openedChat;
+        $ionicScrollDelegate.$getByHandle('chat').scrollBottom();
+        $ionicScrollDelegate.$getByHandle('background').scrollTop();
+        if($scope.chat.unreadMsg) {
+          $scope.chat.unreadMsg = false;
+          socket.emit('seenLastMsg', { gameId: $stateParams.gameId, playerId: Game.getUserId() });
+        }
+      },
+      unreadMsg: false
+
+    }
+
     
 
-
+    //TODO implement so owners can pick amount of players
    /* $scope.playerAmount = 5;
     var playerAmountChangeTimeout;
 
@@ -440,7 +469,6 @@ angular.module('starter.controllers', [])
       console.log($scope.playerAmount);
     });*/
 
-    $scope.expansions = [];
     /**Code for holding the selected and sent card for both player and czar**/
     $scope.chosenWhiteCards = [];
     $scope.selectedCard = null;
@@ -469,7 +497,9 @@ angular.module('starter.controllers', [])
       }
     };
 
+    $scope.expansions = [];
     $scope.startGame = function() {
+      $scope.endRound();
       var expList = [];
       for(x in $scope.expansions) {
         if($scope.expansions[x].chosen === true)
@@ -482,13 +512,13 @@ angular.module('starter.controllers', [])
         });
     };
 
-    $scope.getGame = function() {
+    /*$scope.getGame = function() {
       Game.fetchGame($stateParams.gameId)
         .then(function(success) {
           $scope.game = success.data;
           update(success.data);
         });
-    };
+    };*/
 
     /**Fetching of players for the two possible rows of people in gui**/
     $scope.isTwoRows = function() {
@@ -515,8 +545,11 @@ angular.module('starter.controllers', [])
 
     
     /**Notifications and show $scope functions**/
+    $scope.hasGameStarted = function() {
+      return $scope.game && $scope.game.isStarted;
+    }
+
     $scope.notificationIsCzar = function () {
-      //return $scope.currentPlayer && $scope.currentPlayer.isCzar && !$scope.game.isReadyForReview && $scope.game.isStarted;
       return $scope.currentPlayer && $scope.currentPlayer.isCzar && !$scope.currentPlayer.isReadyToSeeWinningCard && $scope.game.isStarted;
     };
 
@@ -529,7 +562,6 @@ angular.module('starter.controllers', [])
     }
 
     $scope.notificationSelectCard = function() {
-      //return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && !$scope.selectedCard && $scope.game.isStarted && !$scope.game.isReadyForReview;
       return $scope.currentPlayer && (!$scope.currentPlayer.isCzar || ($scope.currentPlayer.isCzar && $scope.game.isReadyForScoring)) && !$scope.selectedCard && $scope.game.isStarted && !startedWatchingEndingOfRound;
     };
 
@@ -550,8 +582,7 @@ angular.module('starter.controllers', [])
     };
 
     $scope.notificationNextRound = function() {
-      //return $scope.game && $scope.game.isReadyForReview && !$scope.game.isOver;
-      return $scope.game && $scope.currentPlayer && $scope.currentPlayer.isReadyToSeeWinningCard && !$scope.game.isOver;
+      return $scope.game && $scope.currentPlayer && $scope.currentPlayer.isReadyToSeeWinningCard && !$scope.game.isOver && $scope.game.roundAmount > 0;
     };
 
     $scope.notificationWaitingOnPlayersToJoin = function() {
@@ -563,21 +594,22 @@ angular.module('starter.controllers', [])
     };
 
     $scope.notificationGameIsOver = function() {
-      return $scope.game && $scope.game.isOver;
+      return $scope.game && (($scope.game.isOver && !$scope.currentPlayer.hasSeenWinningRound) || ($scope.game.winnerId !== null && $scope.game.roundAmount === 0 && $scope.currentPlayer.isReadyToSeeWinningCard));
     };
 
     $scope.showCzarCardBox = function() {
-      //return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring && !$scope.game.isReadyForReview;
       return $scope.currentPlayer && $scope.currentPlayer.isCzar && $scope.game.isStarted && $scope.game.isReadyForScoring && !$scope.currentPlayer.isReadyToSeeWinningCard && !startedWatchingEndingOfRound;
-
     };
 
     $scope.watchRoundEnd = function() {
+      return startedWatchingEndingOfRound && $scope.game && !$scope.game.isOver && $scope.game.roundAmount > 0;
+    };
+
+    $scope.showSkipReview = function() {
       return startedWatchingEndingOfRound;
-    }
+    };
 
     $scope.showReviewCardBox = function() {
-      //return $scope.currentPlayer && $scope.game.isStarted && ($scope.game.isReadyForReview || (!$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring));
       return !startedWatchingEndingOfRound && $scope.currentPlayer && $scope.game.isStarted && (/*startedWatchingEndingOfRound || */(!$scope.currentPlayer.isCzar && $scope.game.isReadyForScoring));
     };
 
@@ -586,12 +618,17 @@ angular.module('starter.controllers', [])
     };
 
     $scope.showStartGameButton = function() {
-      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id;
+      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id && !$scope.game.isOver;
+    };
+
+    $scope.showRestartGameButton = function() {
+      return $scope.game && !$scope.game.isStarted && $scope.game.players.length >= 3 && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id && $scope.game.isOver;
     };
 
     $scope.showExpansionsChoice = function() {
       return $scope.game && !$scope.game.isStarted && $scope.currentPlayer && $scope.game.isOwner === $scope.currentPlayer.id;
     };
+
 
     joinGame();
 
@@ -603,12 +640,9 @@ angular.module('starter.controllers', [])
           }
         });
 
-/*    $scope.$on('$destroy', function(event) {
-      console.info('leaving GameCtrl');
-      if($scope.game){
-        Game.leaveGame($scope.game.id, Game.getUserId());
-      }
-    });*/
-  
+      //Attempt to pick the game up after resuming gameplay
+      document.addEventListener("resume", function() {
+          joinGame();
+      }, false);
     
 });

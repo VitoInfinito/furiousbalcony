@@ -1,23 +1,36 @@
 <ion-view title="Games">
 	<ion-content padding="true">
+		<ion-nav-buttons side="left">
+			<button class="button icon ion-game-controller-a" ng-click="showGlobalInfo = !showGlobalInfo">{{startedGames}}</button>
+			<button class="button icon ion-ios7-world" ng-click="showGlobalInfo = !showGlobalInfo">{{connectedUsers}}</button>
+			<button class="button icon ion-ios7-people" ng-click="showGlobalInfo = !showGlobalInfo">{{registeredUsernames}}</button>
+	    </ion-nav-buttons>
 		<ion-nav-buttons side="right">
 			<button class="button icon ion-plus" ng-click="createGame()"></button>
 	    </ion-nav-buttons>
 
+	    <div class="info-background" ng-show="showGlobalInfo" ng-click="showGlobalInfo = !showGlobalInfo">
+	    	<div id="global-info-msg">
+	    		<div class="icon ion-game-controller-a"> There are {{startedGames}} started games</div>
+	    		<div class="icon ion-ios7-world"> Currently {{connectedUsers}} connected users</div>
+	    		<div class="icon ion-ios7-people"> Right now {{registeredUsernames}} registered usernames</div>
+	    		<div class="redColor">Red color means others are waiting for you to do something</div>
+	    		<div class="greenColor">Green color means you have done all you can for now</div>
+
+	    	</div>
+	    </div>
+
 
 		<div class="game-menu-toggle-item" ng-click="gameList.user = !gameList.user">
-			<div class="gameListItem">Games you are in</div>
-			<div class="gameListItem">
+			<div class="gameListItem tabTitle">Games you are in</div>
+			<div class="gameListItem tabChevron">
 				<div ng-hide="gameList.user" class="text-float-right ion-chevron-up"></div>
 				<div ng-show="gameList.user" class="text-float-right ion-chevron-down"></div>
 			</div>
 		</div>
 		
 		<div class="list list-container" ng-show="gameList.user">
-			<div class="gameListHead">
-		  		<div class="gameListItem">Name</div>
-			</div>
-	    	<ion-item class="fb-listitem" ng-repeat="game in usersGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+	    	<ion-item class="fb-listitem"  ng-repeat="game in usersGames" type="item-text-wrap" ng-class="{statusNotDone: game.playerState === 'active', statusDone: game.playerState === 'passive'}" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
 			        <div class="gameListItem"><div class="text-float-right ion-close closeButton" ng-click="$event.preventDefault();leaveGame(game.id)"></div></div>
@@ -27,19 +40,15 @@
 
 	    
 	    <div class="game-menu-toggle-item" ng-click="gameList.rest = !gameList.rest">
-			<div class="gameListItem">Games you can join</div>
-			<div class="gameListItem">
+			<div class="gameListItem tabTitle">Games you can join</div>
+			<div class="gameListItem tabChevron">
 				<div ng-hide="gameList.rest" class="text-float-right ion-chevron-up"></div>
 				<div ng-show="gameList.rest" class="text-float-right ion-chevron-down"></div>
 			</div>
 		</div>
 
 		<div class="list list-container" ng-show="gameList.rest">
-		    <div class="gameListHead">
-		  		<div class="gameListItem">Name</div>
-				<div class="gameListItem"><div class="text-float-right">Players</div></div>
-			</div>
-	    	<ion-item ng-repeat="game in availableGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
+	    	<ion-item class="fb-listitem" ng-repeat="game in availableGames" type="item-text-wrap" href="#/tab/game/{{game.id}}">
 		        <div>
 			        <div class="gameListItem">{{game.name}}</div>
 			        <div class="gameListItem"><div class="text-float-right">{{game.players}}/8</div></div>
