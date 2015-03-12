@@ -1,6 +1,7 @@
 var hasUsername = false;
 var socket;
 var debug = false;
+var addedListeners = [];
 
 angular.module('starter.controllers', [])
 
@@ -329,6 +330,8 @@ angular.module('starter.controllers', [])
     var initGameSocket = function() {
       socket.removeListener('gameAdded');
       socket.removeListener('updateGame');
+      socket.removeListener('receivedMsg');
+      socket.removeListener('kickPlayer');
 
       socket.on('updateGame', function(game) {
         if(debug) console.info('updateGame');
@@ -369,6 +372,14 @@ angular.module('starter.controllers', [])
           $scope.gameError = errorMsg;
         });
       });
+
+      //Attempt to pick the game up after resuming gameplay
+      if(addedListeners.indexOf($scope.game.id) === -1) {
+        addedListeners.push($scope.game.id);
+        document.addEventListener("resume", function() {
+            joinGame();
+        }, false);
+      }
     };
 
     $scope.kickPlayer = function(playerId) {
@@ -640,9 +651,6 @@ angular.module('starter.controllers', [])
           }
         });
 
-      //Attempt to pick the game up after resuming gameplay
-      document.addEventListener("resume", function() {
-          joinGame();
-      }, false);
+
     
 });
