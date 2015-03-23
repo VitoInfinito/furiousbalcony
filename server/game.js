@@ -176,7 +176,7 @@ function toInfoWithStateForUser(fullGameList, userId) {
 
 function toInfoTimestamp(fullGameList) {
 	return _.map(fullGameList, function(game) {
-		return { id: game.id, name: game.name, isStarted: game.isStarted, createdAt: game.createdAt };
+		return { id: game.id, name: game.name, isStarted: game.isStarted, createdAt: game.createdAt, lastInteraction: game.lastInteraction };
 	});
 };
 
@@ -310,6 +310,7 @@ function addGame(game) {
 		game.isReadyForReview = false;
 		game.id = getRandomId();
 		game.createdAt = new Date();
+		game.lastInteraction = new Date();
 
 		gameList.push(game);
 	}
@@ -417,6 +418,7 @@ function resetGame(gameId) {
 		game.currentBlackCard = "";
 		game.isReadyForScoring = false;
 		game.isReadyForReview = false;
+		game.lastInteraction = new Date();
         for(x in game.players) {
             game.players[x].selectedWhiteCardId = null;
 			game.players[x].isCzar = false;
@@ -442,6 +444,7 @@ function startGame(gameId, expList) {
 		game.isStarted = true;
 		setCurrentBlackCard(game);
 		game.players[0].isCzar = true;
+		game.lastInteraction = new Date();
 	}
 };
 
@@ -453,6 +456,7 @@ function endRound(game) {
 		game.isReadyForReview = false;
 		game.reviewWhiteCards = game.chosenWhiteCards;
 		game.chosenWhiteCards = [];
+		game.lastInteraction = new Date();
 
 		if(game.deck.black.length == 0 || game.deck.white.length <= 8) {
 			console.log(game.name + " is out of cards. Fetching new deck list.");

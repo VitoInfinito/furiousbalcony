@@ -51,6 +51,7 @@ function gameViewModel(gameId) {
         setTimeout(function() {Game.endRound(Game.getGame(gameId)); broadcastGame(gameId);}, 10);
 };*/
 
+
 function checkIfGamesAreAbandoned(timeoutTime) {
 	
 	var currentTime = new Date();
@@ -61,11 +62,17 @@ function checkIfGamesAreAbandoned(timeoutTime) {
 		console.log("The gamelist contains " + games.length + " games");
 
 	for(i=0; i<games.length; i++) {
-		if(games[i].createdAt.getTime() + timeoutTime < currentTime.getTime() && !games[i].isStarted) {
+		var shutDownGame = games[i];
+		if(shutDownGame.createdAt.getTime() + timeoutTime < currentTime.getTime() && !shutDownGame.isStarted) {
 			console.log('*')
-			console.log(games[i].name + " was created at " + games[i].createdAt + " and is now considered abandoned. Shutting game down");
+			console.log(shutDownGame.name + " was created at " + shutDownGame.createdAt + " and is now considered abandoned. Shutting game down");
 			console.log('* ' + i)
-			kickAllPlayersInGameWithId(games[i].id);
+			kickAllPlayersInGameWithId(shutDownGame.id);
+		}else if(shutdownGame.lastInteraction.getTime() + timeoutTime*168 < currentTime.getTime()) {
+			console.log('*')
+			console.log(shutDownGame.name + " had its last interaction at " + shutDownGame.lastInteraction + " and is now considered abandoned. Shutting game down");
+			console.log('* ' + i)
+			kickAllPlayersInGameWithId(shutDownGame.id);
 		}
 	}
 
@@ -80,8 +87,8 @@ function kickAllPlayersInGameWithId(gameId) {
 	if(game) {
 		var players = [];
 		//Creating list with users in order to kick everyone without bugs
-		for(i=0; i<game.players.length; i++) {
-			players.push(game.players[i].id);
+		for(k=0; k<game.players.length; k++) {
+			players.push(game.players[k].id);
 		}
 
 		for(j=0; j<players.length; j++) {
@@ -100,7 +107,11 @@ function initServer() {
 
 io.sockets.on('connection', function(socket) {
 	socketCount += 1;
-	console.log('User connect, socketcount: ' + socketCount);
+	if(socket.userId && socket.userName) {
+		console.log(socket.userName + ' connected, socketcount: ' + socketCount);
+	}else {
+		console.log('User connect, socketcount: ' + socketCount);
+	}
 	socket.join('lobbyRoom');
 
 	socket.on('connectToGame', function(data) {
@@ -128,6 +139,7 @@ io.sockets.on('connection', function(socket) {
 		socket.userId = data.userId;
 		socket.userName = data.userName;
 		socket.clientVersion = data.clientVersion;
+		console.log("high-low");
 	});
 
 	socket.on('kickPlayer', function(data) {
@@ -153,24 +165,12 @@ io.sockets.on('connection', function(socket) {
 
 	socket.on('disconnect', function() {
 		socketCount -= 1;
-		console.log('User disconnect, socketcount: ' + socketCount);
-		if(socket.playerId && socket.gameId) {
-			console.log('socket disconnect ' + socket.playerId);
-			//delete players[socket.gameId][socket.playerId];
-			//Game.departGame(socket.gameId, socket.playerId);
-			//lobbySocket.emit('gameAdded', Game.list());
+		if(socket.userId && socket.userName) {
+			console.log(socket.userName + ' disconnected, socketcount: ' + socketCount);
+		}else {
+			console.log('User disconnect, socketcount: ' + socketCount);
 		}
-
-		/*if(socket.userId && socket.userName) {
-			var games = Game.getGamesUserIsIn(socket.userId);
-			for(i=0; i<games.length; i++) {
-				Game.leaveGame(games[i], socket.userId);
-			}
-			io.to('lobbyRoom').emit('gameAdded', Game.list());
-			Game.removeUsername(socket.userName);
-		}*/
-
-
+		socket.leave('lobbyRoom');
 	});
 });
 		
@@ -290,14 +290,15 @@ app.post('/selectCard', function(req, res) {
 
 app.post('/selectWinningCard', function(req, res) {
 	var continueGame = Game.selectWinner(req.body.gameId, req.body.card);
-	broadcastGame(req.body.gameId);
+	
 	if(continueGame) {
 		//delayEndRound(req.body.gameId);
 		Game.endRound(Game.getGame(req.body.gameId));
-		broadcastGame(req.body.gameId);
+		//broadcastGame(req.body.gameId);
 	}else {
 		console.log(Game.getNameOfGame(req.body.gameId) + " is over");
 	}
+	broadcastGame(req.body.gameId);
 	returnGame(req.body.gameId, res);
 });
 
